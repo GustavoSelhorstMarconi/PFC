@@ -1,0 +1,6 @@
+@PFC.API_HostAddress = http://localhost:5122
+
+GET {{PFC.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

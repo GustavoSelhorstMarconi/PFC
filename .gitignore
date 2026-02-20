@@ -1,0 +1,45 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider/IDE
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+packages/
+
+# Logs
+logs/
+*.log
+*.tlg
+
+# Database
+*.db
+*.db-journal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ASP.NET Core / app settings (local secrets)
+appsettings.json
+appsettings.Development.json
+secrets.json
+.env
+.env.*
+
+# Test results / coverage
+coverage/
+TestResults/

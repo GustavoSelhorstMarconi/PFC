@@ -1,0 +1,44 @@
+﻿using PFC.Domain.ValueObjects;
+
+namespace PFC.Domain.Entities;
+
+public sealed class User : BaseEntity
+{
+    public string Name { get; private set; } = null!;
+    public Email Email { get; private set; } = null!;
+    public string PasswordHash { get; private set; } = null!;
+    public bool IsActive { get; private set; } = true;
+
+    private User() { }
+
+    public User(string name, Email email, string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty");
+
+        Name = name.Trim();
+        Email = email;
+        PasswordHash = passwordHash;
+    }
+
+    public void ChangeName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty");
+
+        Name = name.Trim();
+        SetUpdated();
+    }
+
+    public void ChangePassword(string newPasswordHash)
+    {
+        PasswordHash = newPasswordHash;
+        SetUpdated();
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+        SetUpdated();
+    }
+}

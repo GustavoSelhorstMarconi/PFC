@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="PFC.API/PFC.API.csproj" />
+  <Project Path="PFC.Application/PFC.Application.csproj" />
+  <Project Path="PFC.Domain/PFC.Domain.csproj" />
+  <Project Path="PFC.Dto/PFC.Dto.csproj" />
+  <Project Path="PFC.Infra/PFC.Infra.csproj" />
+</Solution>
