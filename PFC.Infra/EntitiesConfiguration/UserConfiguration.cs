@@ -8,13 +8,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable("users");
+        builder.ToTable("Users");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(150);
+
+        builder.Property(x => x.Email)
+            .HasMaxLength(255)
+            .IsRequired();
 
         builder.Property(x => x.PasswordHash)
             .IsRequired()
@@ -28,18 +32,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.UpdatedAt);
 
-        builder.OwnsOne(x => x.Email, email =>
-        {
-            email.Property(e => e.Address)
-                .HasColumnName("email")
-                .IsRequired()
-                .HasMaxLength(200);
-
-            email.HasIndex(e => e.Address)
-                .IsUnique();
-        });
-
-        builder.HasIndex("email")
+        builder.HasIndex(u => u.Email)
             .IsUnique();
     }
 }

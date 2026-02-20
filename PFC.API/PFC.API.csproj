@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\PFC.Application\PFC.Application.csproj" />
     <ProjectReference Include="..\PFC.Domain\PFC.Domain.csproj" />
     <ProjectReference Include="..\PFC.Dto\PFC.Dto.csproj" />

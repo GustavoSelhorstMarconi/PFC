@@ -4,7 +4,6 @@ using Microsoft.OpenApi;
 using PFC.API.Extensions;
 using PFC.API.Filters;
 using PFC.Infra;
-using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,9 +45,6 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
-
-var app = builder.Build();
-
 builder.Services.AddAuthorization();
 
 builder.Services.AddSwaggerGen(c =>
@@ -62,9 +58,9 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API for personal financial control.",
     });
 
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+    //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    //c.IncludeXmlComments(xmlPath);
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -86,6 +82,8 @@ builder.Services.AddSwaggerGen(c =>
         return requirement;
     });
 });
+
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {

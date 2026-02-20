@@ -5,7 +5,7 @@ namespace PFC.Domain.Entities;
 public sealed class User : BaseEntity
 {
     public string Name { get; private set; } = null!;
-    public Email Email { get; private set; } = null!;
+    public string Email { get; private set; } = null!;
     public string PasswordHash { get; private set; } = null!;
     public bool IsActive { get; private set; } = true;
 
@@ -17,7 +17,7 @@ public sealed class User : BaseEntity
             throw new ArgumentException("Name cannot be empty");
 
         Name = name.Trim();
-        Email = email;
+        Email = email.Address;
         PasswordHash = passwordHash;
     }
 
