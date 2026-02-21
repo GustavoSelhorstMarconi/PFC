@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<Category> Categories => Set<Category>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

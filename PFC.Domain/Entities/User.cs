@@ -9,6 +9,7 @@ public sealed class User : BaseEntity
     public string PasswordHash { get; private set; } = null!;
     public bool IsActive { get; private set; } = true;
     public List<Account> Accounts { get; private set; } = new();
+    public List<Category> Categories { get; private set; } = new();
 
     private User() { }
 
