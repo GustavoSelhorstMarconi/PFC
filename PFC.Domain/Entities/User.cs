@@ -8,6 +8,7 @@ public sealed class User : BaseEntity
     public string Email { get; private set; } = null!;
     public string PasswordHash { get; private set; } = null!;
     public bool IsActive { get; private set; } = true;
+    public List<Account> Accounts { get; private set; } = new();
 
     private User() { }
 

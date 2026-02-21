@@ -15,20 +15,20 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         _dbSet = _context.Set<T>();
     }
 
-    public async Task AddAsync(T entity)
+    public async Task AddAsync(T entity, CancellationToken cancellationToken)
     {
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
 
-        await _dbSet.AddAsync(entity);
+        await _dbSet.AddAsync(entity, cancellationToken);
     }
 
-    public async Task AddRangeAsync(ICollection<T> entities)
+    public async Task AddRangeAsync(ICollection<T> entities, CancellationToken cancellationToken)
     {
         if (entities == null || entities.Count == 0)
             throw new ArgumentNullException(nameof(entities));
 
-        await _dbSet.AddRangeAsync(entities);
+        await _dbSet.AddRangeAsync(entities, cancellationToken);
     }
 
     public void Update(T entity)
@@ -69,28 +69,28 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         _dbSet.RemoveRange(entities);
     }
 
-    public async Task<T> GetByIdAsync(int id, bool asNoTracking = false)
+    public async Task<T> GetByIdAsync(Guid id, CancellationToken cancellationToken, bool asNoTracking = false)
     {
         if (asNoTracking)
         {
-            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id, cancellationToken);
         }
 
-        return await _dbSet.FindAsync(id);
+        return await _dbSet.FindAsync(id, cancellationToken);
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync(bool asNoTracking = false)
+    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken, bool asNoTracking = false)
     {
         if (asNoTracking)
         {
-            return await _dbSet.AsNoTracking().ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
         }
 
-        return await _dbSet.ToListAsync();
+        return await _dbSet.ToListAsync(cancellationToken);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

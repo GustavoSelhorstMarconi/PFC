@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PFC.API.Extensions;
 using PFC.Application.DTOs.Auth;
@@ -43,14 +42,5 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RevokeAsync(request, cancellationToken);
         return result.ToNoContentActionResult();
-    }
-
-    [Authorize]
-    [HttpGet("me")]
-    public async Task<IActionResult> GetProfile()
-    {
-        await Task.Delay(10);
-
-        return Ok("teste");
     }
 }

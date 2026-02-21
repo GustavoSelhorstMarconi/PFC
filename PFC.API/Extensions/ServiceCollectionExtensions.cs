@@ -147,6 +147,7 @@ public static class ServiceCollectionExtensions
             };
         });
 
+        services.AddHttpContextAccessor();
         services.AddAuthorization();
 
         return services;
