@@ -10,6 +10,7 @@ public sealed class Account : BaseEntity
     public decimal InitialBalance { get; private set; }
     public bool IsActive { get; private set; } = true;
     public User User { get; private set; }
+    public List<Transaction> Transactions { get; private set; } = new();
 
     private Account() { }
 

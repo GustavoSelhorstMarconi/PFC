@@ -28,6 +28,8 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
