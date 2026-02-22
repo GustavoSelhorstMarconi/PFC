@@ -19,9 +19,12 @@ public sealed class Transaction : BaseEntity
     public string? Description { get; private set; }
     public bool IsActive { get; private set; } = true;
 
+    public Guid? GoalId { get; private set; }
+    public Goal? Goal { get; private set; }
+
     private Transaction() { }
 
-    public Transaction(Guid userId, Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateTime date, string? description = null)
+    public Transaction(Guid userId, Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateTime date, Guid? goalId, string? description = null)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -37,9 +40,10 @@ public sealed class Transaction : BaseEntity
         Date = date;
         Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         IsActive = true;
+        GoalId = goalId;
     }
 
-    public void Update(Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateTime date, string? description)
+    public void Update(Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateTime date, string? description, Guid? goalId)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -53,6 +57,7 @@ public sealed class Transaction : BaseEntity
         Amount = decimal.Round(amount, 2);
         Date = date;
         Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        GoalId = goalId;
         SetUpdated();
     }
 
