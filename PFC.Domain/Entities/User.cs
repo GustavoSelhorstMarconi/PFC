@@ -13,6 +13,7 @@ public sealed class User : BaseEntity
     public List<Transaction> Transactions { get; private set; } = new();
     public List<Recurrence> Recurrences { get; private set; } = new();
     public List<Goal> Goals { get; private set; } = new();
+    public List<Debt> Debts { get; private set; } = new();
 
     private User() { }
 
