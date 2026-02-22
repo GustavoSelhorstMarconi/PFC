@@ -13,6 +13,7 @@ public sealed class Category : BaseEntity
     public string? Icon { get; private set; }
     public bool IsActive { get; private set; } = true;
     public List<Transaction> Transactions { get; private set; } = new();
+    public List<Recurrence> Recurrences { get; private set; } = new();
 
     private Category() { }
 
