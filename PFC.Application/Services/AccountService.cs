@@ -1,9 +1,9 @@
 using PFC.Application.Common;
-using PFC.Application.DTOs.Accounts;
 using PFC.Application.Interfaces;
 using PFC.Domain.Entities;
 using PFC.Domain.Exceptions;
 using PFC.Domain.Interfaces;
+using PFC.Dto.Accounts;
 
 namespace PFC.Application.Services;
 

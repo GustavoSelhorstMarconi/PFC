@@ -1,10 +1,10 @@
 using PFC.Application.Common;
-using PFC.Application.DTOs.Auth;
 using PFC.Application.Interfaces;
 using PFC.Domain.Entities;
 using PFC.Domain.Exceptions;
 using PFC.Domain.Interfaces;
 using PFC.Domain.ValueObjects;
+using PFC.Dto.Auth;
 
 namespace PFC.Application.Services;
 

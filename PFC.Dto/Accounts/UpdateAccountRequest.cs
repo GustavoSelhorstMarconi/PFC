@@ -1,4 +1,4 @@
-namespace PFC.Application.DTOs.Accounts;
+namespace PFC.Dto.Accounts;
 
 public sealed class UpdateAccountRequest
 {

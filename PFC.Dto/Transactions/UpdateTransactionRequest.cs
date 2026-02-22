@@ -1,8 +1,8 @@
 using PFC.Domain.Enums;
 
-namespace PFC.Application.DTOs.Transactions;
+namespace PFC.Dto.Transactions;
 
-public sealed class CreateTransactionRequest
+public sealed class UpdateTransactionRequest
 {
     public Guid AccountId { get; set; }
     public Guid CategoryId { get; set; }

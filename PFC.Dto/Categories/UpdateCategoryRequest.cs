@@ -1,4 +1,4 @@
-namespace PFC.Application.DTOs.Categories;
+namespace PFC.Dto.Categories;
 
 public sealed class UpdateCategoryRequest
 {

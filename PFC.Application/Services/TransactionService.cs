@@ -1,10 +1,10 @@
 using PFC.Application.Common;
-using PFC.Application.DTOs.Transactions;
 using PFC.Application.Interfaces;
 using PFC.Domain.Entities;
 using PFC.Domain.Enums;
 using PFC.Domain.Exceptions;
 using PFC.Domain.Interfaces;
+using PFC.Dto.Transactions;
 
 namespace PFC.Application.Services;
 

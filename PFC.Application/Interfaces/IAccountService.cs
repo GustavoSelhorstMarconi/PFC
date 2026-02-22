@@ -1,5 +1,5 @@
 using PFC.Application.Common;
-using PFC.Application.DTOs.Accounts;
+using PFC.Dto.Accounts;
 
 namespace PFC.Application.Interfaces;
 

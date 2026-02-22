@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PFC.API.Extensions;
-using PFC.Application.DTOs.Auth;
 using PFC.Application.Interfaces;
+using PFC.Dto.Auth;
 
 namespace PFC.API.Controllers;
 

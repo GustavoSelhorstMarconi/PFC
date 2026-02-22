@@ -1,6 +1,6 @@
 using PFC.Domain.Enums;
 
-namespace PFC.Application.DTOs.Categories;
+namespace PFC.Dto.Categories;
 
 public sealed class CreateCategoryRequest
 {

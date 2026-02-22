@@ -1,6 +1,6 @@
 using PFC.Domain.Enums;
 
-namespace PFC.Application.DTOs.Accounts;
+namespace PFC.Dto.Accounts;
 
 public sealed class CreateAccountRequest
 {

@@ -1,5 +1,5 @@
 using PFC.Application.Common;
-using PFC.Application.DTOs.Auth;
+using PFC.Dto.Auth;
 
 namespace PFC.Application.Interfaces;
 

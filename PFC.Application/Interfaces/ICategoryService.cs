@@ -1,5 +1,5 @@
 using PFC.Application.Common;
-using PFC.Application.DTOs.Categories;
+using PFC.Dto.Categories;
 
 namespace PFC.Application.Interfaces;
 

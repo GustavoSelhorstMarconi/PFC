@@ -1,4 +1,4 @@
-namespace PFC.Application.DTOs.Auth;
+namespace PFC.Dto.Auth;
 
 public sealed class RegisterRequest
 {

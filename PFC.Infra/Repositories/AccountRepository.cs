@@ -21,4 +21,12 @@ public sealed class AccountRepository : IAccountRepository
             .Where(a => a.UserId == userId)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<decimal> SumInitialBalancesByUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Accounts
+            .AsNoTracking()
+            .Where(a => a.UserId == userId && a.IsActive)
+            .SumAsync(a => (decimal?)a.InitialBalance, cancellationToken) ?? 0m;
+    }
 }
