@@ -36,7 +36,7 @@ public sealed class Category : BaseEntity
         IsActive = true;
     }
 
-    public void Update(string name, string color, string? icon)
+    public void Update(string name, string color, string? icon, bool isActive)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty");
@@ -47,12 +47,7 @@ public sealed class Category : BaseEntity
         Name = name.Trim();
         Color = color.ToUpper();
         Icon = string.IsNullOrWhiteSpace(icon) ? null : icon.Trim();
-        SetUpdated();
-    }
-
-    public void Deactivate()
-    {
-        IsActive = false;
+        IsActive = isActive;
         SetUpdated();
     }
 

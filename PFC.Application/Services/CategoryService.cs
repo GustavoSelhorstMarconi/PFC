@@ -82,7 +82,7 @@ public sealed class CategoryService : ICategoryService
         if (existing is not null && existing.Id != category.Id)
             throw new ConflictException("Categoria com esse nome já existe para o usuário");
 
-        category.Update(request.Name, request.Color, request.Icon);
+        category.Update(request.Name, request.Color, request.Icon, request.IsActive);
 
         _baseRepository.Update(category);
         await _baseRepository.SaveChangesAsync(cancellationToken);
@@ -100,26 +100,6 @@ public sealed class CategoryService : ICategoryService
         };
 
         return Result.Success(response);
-    }
-
-    public async Task<Result> DeactivateCategoryAsync(Guid categoryId, CancellationToken cancellationToken)
-    {
-        var userId = _currentUserService.GetUserId();
-
-        var category = await _baseRepository.GetByIdAsync(categoryId, cancellationToken);
-
-        if (category is null)
-            throw new NotFoundException("Category not found");
-
-        if (category.UserId != userId)
-            throw new UnauthorizedException();
-
-        category.Deactivate();
-
-        _baseRepository.Update(category);
-        await _baseRepository.SaveChangesAsync(cancellationToken);
-
-        return Result.Success();
     }
 
     public async Task<Result<IEnumerable<CategoryResponse>>> GetUserCategoriesAsync(CancellationToken cancellationToken)

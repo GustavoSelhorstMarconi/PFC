@@ -38,11 +38,4 @@ public sealed class CategoriesController : ControllerBase
         var result = await _categoryService.UpdateCategoryAsync(id, request, cancellationToken);
         return result.ToActionResult();
     }
-
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Deactivate([FromRoute] Guid id, CancellationToken cancellationToken)
-    {
-        var result = await _categoryService.DeactivateCategoryAsync(id, cancellationToken);
-        return result.ToNoContentActionResult();
-    }
 }
