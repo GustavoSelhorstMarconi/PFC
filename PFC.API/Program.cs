@@ -16,6 +16,8 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PFC API V1");
         c.RoutePrefix = string.Empty;
     });
+
+    app.UseCors("DevelopmentPolicy");
 }
 
 app.UseExceptionHandling();
