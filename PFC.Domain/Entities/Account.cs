@@ -30,12 +30,14 @@ public sealed class Account : BaseEntity
         IsActive = true;
     }
 
-    public void UpdateName(string name)
+    public void UpdateName(string name, AccountType type, bool isActive)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty");
 
         Name = name.Trim();
+        Type = type;
+        IsActive = isActive;
         SetUpdated();
     }
 

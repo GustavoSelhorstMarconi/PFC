@@ -69,7 +69,7 @@ public sealed class AccountService : IAccountService
         if (account.UserId != userId)
             throw new UnauthorizedException();
 
-        account.UpdateName(request.Name);
+        account.UpdateName(request.Name, request.Type, request.IsActive);
 
         _baseRepository.Update(account);
 
@@ -87,25 +87,6 @@ public sealed class AccountService : IAccountService
         };
 
         return Result.Success(response);
-    }
-
-    public async Task<Result> DeactivateAccountAsync(Guid accountId, CancellationToken cancellationToken)
-    {
-        var userId = _currentUserService.GetUserId();
-
-        var account = await _baseRepository.GetByIdAsync(accountId, cancellationToken);
-        if (account is null)
-            throw new NotFoundException("Account not found");
-
-        if (account.UserId != userId)
-            throw new UnauthorizedException();
-
-        account.ChangeStatus(false);
-
-        _baseRepository.Update(account);
-        await _baseRepository.SaveChangesAsync(cancellationToken);
-
-        return Result.Success();
     }
 
     public async Task<Result<IEnumerable<AccountResponse>>> GetUserAccountsAsync(CancellationToken cancellationToken)

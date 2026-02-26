@@ -38,11 +38,4 @@ public sealed class AccountsController : ControllerBase
         var result = await _accountService.UpdateAccountAsync(id, request, cancellationToken);
         return result.ToActionResult();
     }
-
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Deactivate([FromRoute] Guid id, CancellationToken cancellationToken)
-    {
-        var result = await _accountService.DeactivateAccountAsync(id, cancellationToken);
-        return result.ToNoContentActionResult();
-    }
 }
