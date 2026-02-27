@@ -39,15 +39,8 @@ public sealed class RecurrencesController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
-    {
-        var result = await _recurrenceService.DeactivateRecurrenceAsync(id, cancellationToken);
-        return result.ToNoContentActionResult();
-    }
-
     [HttpGet("projection")]
-    public async Task<IActionResult> Projection([FromQuery] DateTime from, [FromQuery] DateTime to, CancellationToken cancellationToken)
+    public async Task<IActionResult> Projection([FromQuery] DateOnly from, [FromQuery] DateOnly to, CancellationToken cancellationToken)
     {
         var result = await _recurrenceService.GetProjectedOccurrencesAsync(from, to, cancellationToken);
         return result.ToActionResult();

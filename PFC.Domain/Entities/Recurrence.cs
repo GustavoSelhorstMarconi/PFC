@@ -19,14 +19,14 @@ public sealed class Recurrence : BaseEntity
 
     public RecurrenceFrequency Frequency { get; private set; }
     public int Interval { get; private set; }
-    public DateTime StartDate { get; private set; }
-    public DateTime? EndDate { get; private set; }
+    public DateOnly StartDate { get; private set; }
+    public DateOnly? EndDate { get; private set; }
     public bool IsActive { get; private set; } = true;
 
     private Recurrence() { }
 
     public Recurrence(Guid userId, Guid accountId, Guid categoryId, TransactionType type, decimal amount, string? description,
-        RecurrenceFrequency frequency, int interval, DateTime startDate, DateTime? endDate)
+        RecurrenceFrequency frequency, int interval, DateOnly startDate, DateOnly? endDate)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -48,13 +48,13 @@ public sealed class Recurrence : BaseEntity
         Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         Frequency = frequency;
         Interval = interval;
-        StartDate = startDate.Date;
-        EndDate = endDate?.Date;
+        StartDate = startDate;
+        EndDate = endDate;
         IsActive = true;
     }
 
     public void Update(Guid accountId, Guid categoryId, TransactionType type, decimal amount, string? description,
-        RecurrenceFrequency frequency, int interval, DateTime startDate, DateTime? endDate)
+        RecurrenceFrequency frequency, int interval, bool isActive, DateOnly startDate, DateOnly? endDate)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -75,8 +75,9 @@ public sealed class Recurrence : BaseEntity
         Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         Frequency = frequency;
         Interval = interval;
-        StartDate = startDate.Date;
-        EndDate = endDate?.Date;
+        IsActive = isActive;
+        StartDate = startDate;
+        EndDate = endDate;
         SetUpdated();
     }
 

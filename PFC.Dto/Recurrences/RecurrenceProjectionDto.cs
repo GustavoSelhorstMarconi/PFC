@@ -4,7 +4,7 @@ namespace PFC.Dto.Recurrences;
 
 public sealed class RecurrenceProjectionDto
 {
-    public DateTime Date { get; set; }
+    public DateOnly Date { get; set; }
     public decimal Amount { get; set; }
     public TransactionType Type { get; set; }
     public string CategoryName { get; set; } = null!;

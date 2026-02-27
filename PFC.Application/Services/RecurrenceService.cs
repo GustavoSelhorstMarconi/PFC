@@ -127,7 +127,7 @@ public sealed class RecurrenceService : IRecurrenceService
             throw new BadRequestException("Category type must be Expense for Expense recurrences");
 
         recurrence.Update(request.AccountId, request.CategoryId, request.Type, request.Amount, request.Description,
-            request.Frequency, request.Interval, request.StartDate, request.EndDate);
+            request.Frequency, request.Interval, request.IsActive, request.StartDate, request.EndDate);
 
         _baseRepository.Update(recurrence);
         await _baseRepository.SaveChangesAsync(cancellationToken);
@@ -135,25 +135,6 @@ public sealed class RecurrenceService : IRecurrenceService
         var response = MapToResponse(recurrence);
 
         return Result.Success(response);
-    }
-
-    public async Task<Result> DeactivateRecurrenceAsync(Guid id, CancellationToken cancellationToken)
-    {
-        var userId = _currentUserService.GetUserId();
-
-        var recurrence = await _baseRepository.GetByIdAsync(id, cancellationToken);
-        if (recurrence is null)
-            throw new NotFoundException("Recurrence not found");
-
-        if (recurrence.UserId != userId)
-            throw new UnauthorizedException();
-
-        recurrence.Deactivate();
-
-        _baseRepository.Update(recurrence);
-        await _baseRepository.SaveChangesAsync(cancellationToken);
-
-        return Result.Success();
     }
 
     public async Task<Result<IEnumerable<RecurrenceResponse>>> GetUserRecurrencesAsync(CancellationToken cancellationToken)
@@ -167,7 +148,7 @@ public sealed class RecurrenceService : IRecurrenceService
         return Result.Success<IEnumerable<RecurrenceResponse>>(result);
     }
 
-    public async Task<Result<IEnumerable<RecurrenceProjectionDto>>> GetProjectedOccurrencesAsync(DateTime from, DateTime to, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<RecurrenceProjectionDto>>> GetProjectedOccurrencesAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)
     {
         if (from > to)
             throw new BadRequestException("From must be before To");
@@ -180,12 +161,12 @@ public sealed class RecurrenceService : IRecurrenceService
 
         foreach (var r in recurrences)
         {
-            var start = r.StartDate.Date;
-            var end = r.EndDate?.Date;
+            var start = r.StartDate;
+            var end = r.EndDate;
 
             var current = start;
 
-            while (current < from.Date)
+            while (current < from)
             {
                 current = GetNextOccurrence(current, r.Frequency, r.Interval);
 
@@ -193,12 +174,12 @@ public sealed class RecurrenceService : IRecurrenceService
                     break;
             }
 
-            while (current <= to.Date)
+            while (current <= to)
             {
                 if (end.HasValue && current > end.Value)
                     break;
 
-                if (current >= from.Date)
+                if (current >= from)
                 {
                     projections.Add(new RecurrenceProjectionDto
                     {
@@ -217,7 +198,7 @@ public sealed class RecurrenceService : IRecurrenceService
         return Result.Success<IEnumerable<RecurrenceProjectionDto>>(projections);
     }
 
-    private DateTime GetNextOccurrence(DateTime current, RecurrenceFrequency frequency, int interval)
+    private DateOnly GetNextOccurrence(DateOnly current, RecurrenceFrequency frequency, int interval)
     {
         return frequency switch
         {
