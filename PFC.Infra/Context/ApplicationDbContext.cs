@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Recurrence> Recurrences => Set<Recurrence>();
     public DbSet<Goal> Goals => Set<Goal>();
+    public DbSet<Debt> Debts => Set<Debt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

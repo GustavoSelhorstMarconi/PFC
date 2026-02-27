@@ -77,7 +77,7 @@ public sealed class DebtService : IDebtService
         if (debt.IsPaid())
             throw new BadRequestException("Cannot modify a paid debt");
 
-        debt.Update(request.Name, request.TotalAmount, request.InterestRate, request.DueDate);
+        debt.Update(request.Name, request.TotalAmount, request.InterestRate, request.DueDate, request.IsActive);
 
         _baseRepository.Update(debt);
         await _baseRepository.SaveChangesAsync(cancellationToken);
@@ -96,25 +96,6 @@ public sealed class DebtService : IDebtService
         };
 
         return Result.Success(response);
-    }
-
-    public async Task<Result> DeactivateDebtAsync(Guid id, CancellationToken cancellationToken)
-    {
-        var userId = _currentUserService.GetUserId();
-
-        var debt = await _baseRepository.GetByIdAsync(id, cancellationToken);
-        if (debt is null)
-            throw new NotFoundException("Debt not found");
-
-        if (debt.UserId != userId)
-            throw new UnauthorizedException();
-
-        debt.Deactivate();
-
-        _baseRepository.Update(debt);
-        await _baseRepository.SaveChangesAsync(cancellationToken);
-
-        return Result.Success();
     }
 
     public async Task<Result<DebtResponse>> GetDebtByIdAsync(Guid id, CancellationToken cancellationToken)

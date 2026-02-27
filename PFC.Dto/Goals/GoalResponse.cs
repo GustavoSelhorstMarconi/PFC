@@ -6,7 +6,7 @@ public sealed class GoalResponse
     public string Name { get; set; } = null!;
     public decimal TargetAmount { get; set; }
     public decimal CurrentAmount { get; set; }
-    public DateTime? Deadline { get; set; }
+    public DateOnly? Deadline { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

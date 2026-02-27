@@ -9,8 +9,6 @@ public interface IGoalService
 
     Task<Result<GoalResponse>> UpdateGoalAsync(Guid goalId, UpdateGoalRequest request, CancellationToken cancellationToken);
 
-    Task<Result> DeactivateGoalAsync(Guid goalId, CancellationToken cancellationToken);
-
     Task<Result<IEnumerable<GoalResponse>>> GetUserGoalsAsync(CancellationToken cancellationToken);
 
     Task<Result> AddContributionAsync(Guid goalId, decimal amount, CancellationToken cancellationToken);

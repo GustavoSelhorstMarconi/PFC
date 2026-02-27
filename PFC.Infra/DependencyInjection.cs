@@ -25,7 +25,13 @@ public static class DependencyInjection
 
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IAccountRepository, AccountRepository>();
-        
+
+        services.AddScoped<IGoalService, GoalService>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
+
+        services.AddScoped<IDebtService, DebtService>();
+        services.AddScoped<IDebtRepository, DebtRepository>();
+
         services.AddScoped<IRecurrenceRepository, RecurrenceRepository>();
         services.AddScoped<IRecurrenceService, RecurrenceService>();
 

@@ -9,8 +9,6 @@ public interface IDebtService
 
     Task<Result<DebtResponse>> UpdateDebtAsync(Guid id, UpdateDebtRequest request, CancellationToken cancellationToken);
 
-    Task<Result> DeactivateDebtAsync(Guid id, CancellationToken cancellationToken);
-
     Task<Result<DebtResponse>> GetDebtByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<Result<IEnumerable<DebtResponse>>> GetUserDebtsAsync(CancellationToken cancellationToken);

@@ -73,7 +73,7 @@ public sealed class GoalService : IGoalService
         if (goal.UserId != userId)
             throw new UnauthorizedException();
 
-        goal.Update(request.Name, request.TargetAmount, request.Deadline);
+        goal.Update(request.Name, request.TargetAmount, request.Deadline, request.IsActive);
 
         _baseRepository.Update(goal);
         await _baseRepository.SaveChangesAsync(cancellationToken);
@@ -91,25 +91,6 @@ public sealed class GoalService : IGoalService
         };
 
         return Result.Success(response);
-    }
-
-    public async Task<Result> DeactivateGoalAsync(Guid goalId, CancellationToken cancellationToken)
-    {
-        var userId = _currentUserService.GetUserId();
-
-        var goal = await _baseRepository.GetByIdAsync(goalId, cancellationToken);
-        if (goal is null)
-            throw new NotFoundException("Goal not found");
-
-        if (goal.UserId != userId)
-            throw new UnauthorizedException();
-
-        goal.Deactivate();
-
-        _baseRepository.Update(goal);
-        await _baseRepository.SaveChangesAsync(cancellationToken);
-
-        return Result.Success();
     }
 
     public async Task<Result<IEnumerable<GoalResponse>>> GetUserGoalsAsync(CancellationToken cancellationToken)

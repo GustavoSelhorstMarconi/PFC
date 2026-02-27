@@ -8,33 +8,33 @@ public sealed class Goal : BaseEntity
     public string Name { get; private set; } = null!;
     public decimal TargetAmount { get; private set; }
     public decimal CurrentAmount { get; private set; }
-    public DateTime? Deadline { get; private set; }
+    public DateOnly? Deadline { get; private set; }
     public bool IsActive { get; private set; } = true;
 
     public List<Transaction> Transactions { get; private set; } = new();
 
     private Goal() { }
 
-    public Goal(Guid userId, string name, decimal targetAmount, DateTime? deadline = null)
+    public Goal(Guid userId, string name, decimal targetAmount, DateOnly? deadline = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty");
 
+        if (deadline.HasValue && deadline.Value <= DateOnly.FromDateTime(DateTime.Now))
+            throw new ArgumentException("Deadline must be a future date");
+
         if (targetAmount <= 0)
             throw new ArgumentException("TargetAmount must be greater than zero");
-
-        if (deadline.HasValue && deadline.Value.Date <= DateTime.UtcNow.Date)
-            throw new ArgumentException("Deadline must be a future date");
 
         UserId = userId;
         Name = name.Trim();
         TargetAmount = decimal.Round(targetAmount, 2);
         CurrentAmount = 0m;
-        Deadline = deadline?.Date;
+        Deadline = deadline;
         IsActive = true;
     }
 
-    public void Update(string name, decimal targetAmount, DateTime? deadline)
+    public void Update(string name, decimal targetAmount, DateOnly? deadline, bool isActive)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty");
@@ -42,7 +42,7 @@ public sealed class Goal : BaseEntity
         if (targetAmount <= 0)
             throw new ArgumentException("TargetAmount must be greater than zero");
 
-        if (deadline.HasValue && deadline.Value.Date <= DateTime.UtcNow.Date)
+        if (deadline.HasValue && deadline.Value <= DateOnly.FromDateTime(DateTime.Now))
             throw new ArgumentException("Deadline must be a future date");
 
         if (CurrentAmount > targetAmount)
@@ -50,7 +50,8 @@ public sealed class Goal : BaseEntity
 
         Name = name.Trim();
         TargetAmount = decimal.Round(targetAmount, 2);
-        Deadline = deadline?.Date;
+        Deadline = deadline;
+        IsActive = isActive;
         SetUpdated();
     }
 

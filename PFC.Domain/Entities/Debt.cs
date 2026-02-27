@@ -1,5 +1,3 @@
-using PFC.Domain.Exceptions;
-
 namespace PFC.Domain.Entities;
 
 public sealed class Debt : BaseEntity
@@ -11,14 +9,14 @@ public sealed class Debt : BaseEntity
     public decimal TotalAmount { get; private set; }
     public decimal RemainingAmount { get; private set; }
     public decimal? InterestRate { get; private set; }
-    public DateTime? DueDate { get; private set; }
+    public DateOnly? DueDate { get; private set; }
     public bool IsActive { get; private set; } = true;
 
     public List<Transaction> Transactions { get; private set; } = new();
 
     private Debt() { }
 
-    public Debt(Guid userId, string name, decimal totalAmount, decimal? interestRate = null, DateTime? dueDate = null)
+    public Debt(Guid userId, string name, decimal totalAmount, decimal? interestRate = null, DateOnly? dueDate = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty");
@@ -26,7 +24,7 @@ public sealed class Debt : BaseEntity
         if (totalAmount <= 0)
             throw new ArgumentException("TotalAmount must be greater than zero");
 
-        if (dueDate.HasValue && dueDate.Value.Date <= DateTime.UtcNow.Date)
+        if (dueDate.HasValue && dueDate.Value <= DateOnly.FromDateTime(DateTime.Now))
             throw new ArgumentException("DueDate must be a future date");
 
         UserId = userId;
@@ -34,11 +32,11 @@ public sealed class Debt : BaseEntity
         TotalAmount = decimal.Round(totalAmount, 2);
         RemainingAmount = TotalAmount;
         InterestRate = interestRate.HasValue ? decimal.Round(interestRate.Value, 2) : null;
-        DueDate = dueDate?.Date;
+        DueDate = dueDate;
         IsActive = true;
     }
 
-    public void Update(string name, decimal totalAmount, decimal? interestRate, DateTime? dueDate)
+    public void Update(string name, decimal totalAmount, decimal? interestRate, DateOnly? dueDate, bool isActive)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty");
@@ -46,7 +44,7 @@ public sealed class Debt : BaseEntity
         if (totalAmount <= 0)
             throw new ArgumentException("TotalAmount must be greater than zero");
 
-        if (dueDate.HasValue && dueDate.Value.Date <= DateTime.UtcNow.Date)
+        if (dueDate.HasValue && dueDate.Value <= DateOnly.FromDateTime(DateTime.Now))
             throw new ArgumentException("DueDate must be a future date");
 
         if (RemainingAmount > totalAmount)
@@ -55,7 +53,8 @@ public sealed class Debt : BaseEntity
         Name = name.Trim();
         TotalAmount = decimal.Round(totalAmount, 2);
         InterestRate = interestRate.HasValue ? decimal.Round(interestRate.Value, 2) : null;
-        DueDate = dueDate?.Date;
+        DueDate = dueDate;
+        IsActive = isActive;
         SetUpdated();
     }
 

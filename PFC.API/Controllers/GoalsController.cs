@@ -39,13 +39,6 @@ public sealed class GoalsController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Deactivate([FromRoute] Guid id, CancellationToken cancellationToken)
-    {
-        var result = await _goalService.DeactivateGoalAsync(id, cancellationToken);
-        return result.ToNoContentActionResult();
-    }
-
     [HttpPost("{id:guid}/contribute")]
     public async Task<IActionResult> Contribute([FromRoute] Guid id, [FromQuery] decimal amount, CancellationToken cancellationToken)
     {
