@@ -75,22 +75,7 @@ public sealed class RecurrenceService : IRecurrenceService
         await _baseRepository.AddAsync(recurrence, cancellationToken);
         await _baseRepository.SaveChangesAsync(cancellationToken);
 
-        var response = new RecurrenceResponse
-        {
-            Id = recurrence.Id,
-            AccountId = recurrence.AccountId,
-            CategoryId = recurrence.CategoryId,
-            Type = recurrence.Type,
-            Amount = recurrence.Amount,
-            Description = recurrence.Description,
-            Frequency = recurrence.Frequency,
-            Interval = recurrence.Interval,
-            StartDate = recurrence.StartDate,
-            EndDate = recurrence.EndDate,
-            IsActive = recurrence.IsActive,
-            CreatedAt = recurrence.CreatedAt,
-            UpdatedAt = recurrence.UpdatedAt
-        };
+        var response = MapToResponse(recurrence);
 
         return Result.Success(response);
     }
@@ -147,22 +132,7 @@ public sealed class RecurrenceService : IRecurrenceService
         _baseRepository.Update(recurrence);
         await _baseRepository.SaveChangesAsync(cancellationToken);
 
-        var response = new RecurrenceResponse
-        {
-            Id = recurrence.Id,
-            AccountId = recurrence.AccountId,
-            CategoryId = recurrence.CategoryId,
-            Type = recurrence.Type,
-            Amount = recurrence.Amount,
-            Description = recurrence.Description,
-            Frequency = recurrence.Frequency,
-            Interval = recurrence.Interval,
-            StartDate = recurrence.StartDate,
-            EndDate = recurrence.EndDate,
-            IsActive = recurrence.IsActive,
-            CreatedAt = recurrence.CreatedAt,
-            UpdatedAt = recurrence.UpdatedAt
-        };
+        var response = MapToResponse(recurrence);
 
         return Result.Success(response);
     }
@@ -192,22 +162,7 @@ public sealed class RecurrenceService : IRecurrenceService
 
         var recurrences = await _recurrenceRepository.GetUserRecurrencesAsync(userId, cancellationToken);
 
-        var result = recurrences.Select(r => new RecurrenceResponse
-        {
-            Id = r.Id,
-            AccountId = r.AccountId,
-            CategoryId = r.CategoryId,
-            Type = r.Type,
-            Amount = r.Amount,
-            Description = r.Description,
-            Frequency = r.Frequency,
-            Interval = r.Interval,
-            StartDate = r.StartDate,
-            EndDate = r.EndDate,
-            IsActive = r.IsActive,
-            CreatedAt = r.CreatedAt,
-            UpdatedAt = r.UpdatedAt
-        }).ToList();
+        var result = recurrences.Select(r => MapToResponse(r)).ToList();
 
         return Result.Success<IEnumerable<RecurrenceResponse>>(result);
     }
@@ -230,21 +185,12 @@ public sealed class RecurrenceService : IRecurrenceService
 
             var current = start;
 
-            if (current < from.Date)
+            while (current < from.Date)
             {
-                if (r.Frequency == RecurrenceFrequency.Weekly)
-                {
-                    var weeksDiff = (int)Math.Ceiling((from.Date - current).TotalDays / (7 * r.Interval));
-                    if (weeksDiff > 0)
-                        current = current.AddDays(weeksDiff * 7 * r.Interval);
-                }
-                else
-                {
-                    int monthsDiff = ((from.Date.Year - current.Year) * 12) + (from.Date.Month - current.Month);
-                    var periods = (int)Math.Ceiling((double)monthsDiff / r.Interval);
-                    if (periods > 0)
-                        current = current.AddMonths(periods * r.Interval);
-                }
+                current = GetNextOccurrence(current, r.Frequency, r.Interval);
+
+                if (end.HasValue && current > end.Value)
+                    break;
             }
 
             while (current <= to.Date)
@@ -252,7 +198,7 @@ public sealed class RecurrenceService : IRecurrenceService
                 if (end.HasValue && current > end.Value)
                     break;
 
-                if (current >= from.Date && current <= to.Date)
+                if (current >= from.Date)
                 {
                     projections.Add(new RecurrenceProjectionDto
                     {
@@ -264,13 +210,42 @@ public sealed class RecurrenceService : IRecurrenceService
                     });
                 }
 
-                if (r.Frequency == RecurrenceFrequency.Weekly)
-                    current = current.AddDays(7 * r.Interval);
-                else
-                    current = current.AddMonths(r.Interval);
+                current = GetNextOccurrence(current, r.Frequency, r.Interval);
             }
         }
 
         return Result.Success<IEnumerable<RecurrenceProjectionDto>>(projections);
+    }
+
+    private DateTime GetNextOccurrence(DateTime current, RecurrenceFrequency frequency, int interval)
+    {
+        return frequency switch
+        {
+            RecurrenceFrequency.Daily => current.AddDays(interval),
+            RecurrenceFrequency.Weekly => current.AddDays(7 * interval),
+            RecurrenceFrequency.Monthly => current.AddMonths(interval),
+            RecurrenceFrequency.Yearly => current.AddYears(interval),
+            _ => throw new NotSupportedException("Unsupported frequency")
+        };
+    }
+
+    private static RecurrenceResponse MapToResponse(Recurrence recurrence)
+    {
+        return new RecurrenceResponse
+        {
+            Id = recurrence.Id,
+            AccountId = recurrence.AccountId,
+            CategoryId = recurrence.CategoryId,
+            Type = recurrence.Type,
+            Amount = recurrence.Amount,
+            Description = recurrence.Description,
+            Frequency = recurrence.Frequency,
+            Interval = recurrence.Interval,
+            StartDate = recurrence.StartDate,
+            EndDate = recurrence.EndDate,
+            IsActive = recurrence.IsActive,
+            CreatedAt = recurrence.CreatedAt,
+            UpdatedAt = recurrence.UpdatedAt
+        };
     }
 }

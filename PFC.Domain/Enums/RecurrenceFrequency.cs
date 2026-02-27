@@ -2,6 +2,8 @@ namespace PFC.Domain.Enums;
 
 public enum RecurrenceFrequency
 {
+    Daily,
     Weekly,
-    Monthly
+    Monthly,
+    Yearly,
 }
