@@ -196,7 +196,9 @@ public sealed class TransactionService : ITransactionService
             Description = transaction.Description,
             IsActive = transaction.IsActive,
             CreatedAt = transaction.CreatedAt,
-            UpdatedAt = transaction.UpdatedAt
+            UpdatedAt = transaction.UpdatedAt,
+            GoalId = transaction.GoalId,
+            DebtId = transaction.DebtId
         };
     }
 
@@ -362,17 +364,11 @@ public sealed class TransactionService : ITransactionService
         if (transaction.UserId != userId)
             throw new UnauthorizedException();
 
-        // ===============================
-        // Reverte Goal
-        // ===============================
         await RevertGoalAsync(
             transaction.GoalId,
             transaction.Amount,
             cancellationToken);
 
-        // ===============================
-        // Reverte Debt
-        // ===============================
         await RevertDebtAsync(
             transaction.DebtId,
             transaction.Amount,
@@ -418,19 +414,7 @@ public sealed class TransactionService : ITransactionService
 
         var transactions = await _transactionRepository.GetByUserIdAsync(userId, month, year, cancellationToken);
 
-        var result = transactions.Select(t => new TransactionResponse
-        {
-            Id = t.Id,
-            AccountId = t.AccountId,
-            CategoryId = t.CategoryId,
-            Type = t.Type,
-            Amount = t.Amount,
-            Date = t.Date,
-            Description = t.Description,
-            IsActive = t.IsActive,
-            CreatedAt = t.CreatedAt,
-            UpdatedAt = t.UpdatedAt
-        }).ToList();
+        var result = transactions.Select(t => MapToResponse(t)).ToList();
 
         return Result.Success<IEnumerable<TransactionResponse>>(result);
     }

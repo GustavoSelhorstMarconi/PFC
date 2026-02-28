@@ -9,9 +9,11 @@ public sealed class TransactionResponse
     public Guid CategoryId { get; set; }
     public TransactionType Type { get; set; }
     public decimal Amount { get; set; }
-    public DateTime Date { get; set; }
+    public DateOnly Date { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; }
+    public Guid? GoalId { get; set; }
+    public Guid? DebtId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
