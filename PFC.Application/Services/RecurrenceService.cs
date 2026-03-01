@@ -15,19 +15,22 @@ public sealed class RecurrenceService : IRecurrenceService
     private readonly IBaseRepository<Account> _accountRepository;
     private readonly IBaseRepository<Category> _categoryRepository;
     private readonly IRecurrenceRepository _recurrenceRepository;
+    private readonly ITransactionRepository _transactionRepository;
 
     public RecurrenceService(
         ICurrentUserService currentUserService,
         IBaseRepository<Recurrence> baseRepository,
         IBaseRepository<Account> accountRepository,
         IBaseRepository<Category> categoryRepository,
-        IRecurrenceRepository recurrenceRepository)
+        IRecurrenceRepository recurrenceRepository,
+        ITransactionRepository transactionRepository)
     {
         _currentUserService = currentUserService;
         _baseRepository = baseRepository;
         _accountRepository = accountRepository;
         _categoryRepository = categoryRepository;
         _recurrenceRepository = recurrenceRepository;
+        _transactionRepository = transactionRepository;
     }
 
     public async Task<Result<RecurrenceResponse>> CreateRecurrenceAsync(CreateRecurrenceRequest request, CancellationToken cancellationToken)
@@ -229,5 +232,50 @@ public sealed class RecurrenceService : IRecurrenceService
             CreatedAt = recurrence.CreatedAt,
             UpdatedAt = recurrence.UpdatedAt
         };
+    }
+
+    public async Task<Result<IEnumerable<PendingRecurrenceOccurrenceDto>>> GetPendingRecurrenceOccurrences(DateOnly untilDate, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var recurrences = await _recurrenceRepository.GetActiveRecurrencesAsync(userId, cancellationToken);
+
+        var recurrenceIds = recurrences.Select(r => r.Id).ToList();
+
+        var generatedTransactions = await _transactionRepository.GetTransactionsByRecurrencesIds(recurrenceIds);
+
+        var result = new List<PendingRecurrenceOccurrenceDto>();
+
+        foreach (var recurrence in recurrences)
+        {
+            var nextDate = recurrence.StartDate;
+
+            while (nextDate <= untilDate)
+            {
+                if (recurrence.EndDate.HasValue && nextDate > recurrence.EndDate)
+                    break;
+
+                var alreadyGenerated = generatedTransactions
+                    .Any(t => t.RecurrenceId == recurrence.Id
+                           && t.Date == nextDate);
+
+                if (!alreadyGenerated)
+                {
+                    result.Add(new PendingRecurrenceOccurrenceDto
+                    {
+                        RecurrenceId = recurrence.Id,
+                        Description = recurrence.Description,
+                        OccurrenceDate = nextDate,
+                        Amount = recurrence.Amount,
+                        AccountId = recurrence.AccountId,
+                        CategoryId = recurrence.CategoryId
+                    });
+                }
+
+                nextDate = GetNextOccurrence(nextDate, recurrence.Frequency, recurrence.Interval);
+            }
+        }
+
+        return result;
     }
 }

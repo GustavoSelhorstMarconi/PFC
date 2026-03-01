@@ -99,4 +99,18 @@ public sealed class TransactionRepository : ITransactionRepository
 
         return await query.ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<TransactionByRecurrenceIdsResponse>> GetTransactionsByRecurrencesIds(List<Guid> recurrenceIds)
+    {
+        var result = await _context.Transactions
+            .Where(t => t.RecurrenceId != null && recurrenceIds.Contains(t.RecurrenceId.Value))
+            .Select(t => new TransactionByRecurrenceIdsResponse
+            {
+                RecurrenceId = t.RecurrenceId.Value,
+                Date = t.Date
+            })
+            .ToListAsync();
+
+        return result;
+    }
 }

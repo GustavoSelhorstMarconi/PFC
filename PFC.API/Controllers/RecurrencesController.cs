@@ -45,4 +45,11 @@ public sealed class RecurrencesController : ControllerBase
         var result = await _recurrenceService.GetProjectedOccurrencesAsync(from, to, cancellationToken);
         return result.ToActionResult();
     }
+
+    [HttpGet("pending")]
+    public async Task<IActionResult> GetPendingRecurrences([FromQuery] DateOnly untilDate, CancellationToken cancellationToken)
+    {
+        var result = await _recurrenceService.GetPendingRecurrenceOccurrences(untilDate, cancellationToken);
+        return result.ToActionResult();
+    }
 }
