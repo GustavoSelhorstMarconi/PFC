@@ -25,9 +25,12 @@ public sealed class Transaction : BaseEntity
     public Guid? DebtId { get; private set; }
     public Debt? Debt { get; private set; }
 
+    public Guid? RecurrenceId { get; private set; }
+    public Recurrence? Recurrence { get; private set; }
+
     private Transaction() { }
 
-    public Transaction(Guid userId, Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateOnly date, Guid? goalId, Guid? debtId, string? description = null)
+    public Transaction(Guid userId, Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateOnly date, Guid? goalId, Guid? debtId, Guid? recurrenceId, string? description = null)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -45,6 +48,7 @@ public sealed class Transaction : BaseEntity
         IsActive = true;
         GoalId = goalId;
         DebtId = debtId;
+        RecurrenceId = recurrenceId;
     }
 
     public void Update(Guid accountId, Guid categoryId, TransactionType type, decimal amount, DateOnly date, string? description, Guid? goalId, Guid? debtId)

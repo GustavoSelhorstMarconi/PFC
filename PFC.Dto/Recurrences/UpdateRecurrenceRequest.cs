@@ -14,4 +14,5 @@ public sealed class UpdateRecurrenceRequest
     public bool IsActive { get; set; }
     public DateOnly StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
+    public bool GeneratesTransaction { get; set; }
 }

@@ -70,7 +70,7 @@ public sealed class RecurrenceService : IRecurrenceService
             throw new BadRequestException("Category type must be Expense for Expense recurrences");
 
         var recurrence = new Recurrence(userId, request.AccountId, request.CategoryId, request.Type, request.Amount, request.Description,
-            request.Frequency, request.Interval, request.StartDate, request.EndDate);
+            request.Frequency, request.Interval, request.StartDate, request.EndDate, request.GeneratesTransaction);
 
         await _baseRepository.AddAsync(recurrence, cancellationToken);
         await _baseRepository.SaveChangesAsync(cancellationToken);
@@ -127,7 +127,7 @@ public sealed class RecurrenceService : IRecurrenceService
             throw new BadRequestException("Category type must be Expense for Expense recurrences");
 
         recurrence.Update(request.AccountId, request.CategoryId, request.Type, request.Amount, request.Description,
-            request.Frequency, request.Interval, request.IsActive, request.StartDate, request.EndDate);
+            request.Frequency, request.Interval, request.IsActive, request.StartDate, request.EndDate, request.GeneratesTransaction);
 
         _baseRepository.Update(recurrence);
         await _baseRepository.SaveChangesAsync(cancellationToken);
@@ -224,6 +224,7 @@ public sealed class RecurrenceService : IRecurrenceService
             Interval = recurrence.Interval,
             StartDate = recurrence.StartDate,
             EndDate = recurrence.EndDate,
+            GeneratesTransaction = recurrence.GeneratesTransaction,
             IsActive = recurrence.IsActive,
             CreatedAt = recurrence.CreatedAt,
             UpdatedAt = recurrence.UpdatedAt

@@ -163,6 +163,7 @@ public sealed class TransactionService : ITransactionService
             request.Date,
             request.GoalId,
             request.DebtId,
+            null,
             request.Description
         );
     }

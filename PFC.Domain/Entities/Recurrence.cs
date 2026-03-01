@@ -22,11 +22,12 @@ public sealed class Recurrence : BaseEntity
     public DateOnly StartDate { get; private set; }
     public DateOnly? EndDate { get; private set; }
     public bool IsActive { get; private set; } = true;
+    public bool GeneratesTransaction { get; private set; }
 
     private Recurrence() { }
 
     public Recurrence(Guid userId, Guid accountId, Guid categoryId, TransactionType type, decimal amount, string? description,
-        RecurrenceFrequency frequency, int interval, DateOnly startDate, DateOnly? endDate)
+        RecurrenceFrequency frequency, int interval, DateOnly startDate, DateOnly? endDate, bool generatesTransaction)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -50,11 +51,12 @@ public sealed class Recurrence : BaseEntity
         Interval = interval;
         StartDate = startDate;
         EndDate = endDate;
+        GeneratesTransaction = generatesTransaction;
         IsActive = true;
     }
 
     public void Update(Guid accountId, Guid categoryId, TransactionType type, decimal amount, string? description,
-        RecurrenceFrequency frequency, int interval, bool isActive, DateOnly startDate, DateOnly? endDate)
+        RecurrenceFrequency frequency, int interval, bool isActive, DateOnly startDate, DateOnly? endDate, bool generatesTransaction)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount must be greater than zero");
@@ -78,6 +80,7 @@ public sealed class Recurrence : BaseEntity
         IsActive = isActive;
         StartDate = startDate;
         EndDate = endDate;
+        GeneratesTransaction = generatesTransaction;
         SetUpdated();
     }
 
