@@ -17,6 +17,7 @@ public sealed class TransactionService : ITransactionService
     private readonly IBaseRepository<Goal> _goalRepository;
     private readonly IBaseRepository<Debt> _debtRepository;
     private readonly ITransactionRepository _transactionRepository;
+    private readonly IRecurrenceRepository _recurrenceRepository;
 
     public TransactionService(
         ICurrentUserService currentUserService,
@@ -25,7 +26,8 @@ public sealed class TransactionService : ITransactionService
         IBaseRepository<Category> categoryRepository,
         IBaseRepository<Goal> goalRepository,
         IBaseRepository<Debt> debtRepository,
-        ITransactionRepository transactionRepository
+        ITransactionRepository transactionRepository,
+        IRecurrenceRepository recurrenceRepository
         )
     {
         _currentUserService = currentUserService;
@@ -35,6 +37,7 @@ public sealed class TransactionService : ITransactionService
         _goalRepository = goalRepository;
         _debtRepository = debtRepository;
         _transactionRepository = transactionRepository;
+        _recurrenceRepository = recurrenceRepository;
     }
 
     public async Task<Result<TransactionResponse>> CreateTransactionAsync(
@@ -418,5 +421,55 @@ public sealed class TransactionService : ITransactionService
         var result = transactions.Select(t => MapToResponse(t)).ToList();
 
         return Result.Success<IEnumerable<TransactionResponse>>(result);
+    }
+
+    public async Task<Result<IEnumerable<TransactionResponse>>> GenerateTransactionFromRecurrencesAsync(List<GenerateTransactionFromRecurrenceRequest> recurrencesRequest, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var recurrenceIds = recurrencesRequest
+            .Select(r => r.RecurrenceId)
+            .Distinct()
+            .ToList();
+
+        var transactionsToCreate = new List<Transaction>();
+
+        var recurrences = await _recurrenceRepository.GetRecurrencesByIds(recurrenceIds, cancellationToken);
+
+        var existingTransactions = await _transactionRepository.GetTransactionsByRecurrencesIds(recurrenceIds);
+
+        foreach (var recurrenceRequest in recurrencesRequest)
+        {
+            var alreadyExists = existingTransactions.Any(t =>
+                t.RecurrenceId == recurrenceRequest.RecurrenceId &&
+                t.Date == recurrenceRequest.OccurrenceDate);
+
+            if (alreadyExists)
+                continue;
+
+            var recurrence = recurrences.SingleOrDefault(r => r.Id == recurrenceRequest.RecurrenceId);
+
+            var newTransaction = new Transaction(
+                userId,
+                recurrence.AccountId,
+                recurrence.CategoryId,
+                recurrence.Type,
+                recurrence.Amount,
+                recurrenceRequest.OccurrenceDate,
+                null,
+                null,
+                recurrence.Id,
+                recurrence.Description
+            );
+
+            transactionsToCreate.Add(newTransaction);
+        }
+
+        await _baseRepository.AddRangeAsync(transactionsToCreate, cancellationToken);
+        await _baseRepository.SaveChangesAsync(cancellationToken);
+
+        var response = transactionsToCreate.Select(t => MapToResponse(t));
+
+        return Result.Success(response);
     }
 }

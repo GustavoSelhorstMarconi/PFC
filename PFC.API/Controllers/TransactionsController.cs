@@ -45,4 +45,11 @@ public sealed class TransactionsController : ControllerBase
         var result = await _transactionService.DeleteTransactionAsync(id, cancellationToken);
         return result.ToNoContentActionResult();
     }
+
+    [HttpPost("from-recurrences")]
+    public async Task<IActionResult> GenerateTransactionFromRecurrences([FromBody] List<GenerateTransactionFromRecurrenceRequest> recurrences, CancellationToken cancellationToken)
+    {
+        var result = await _transactionService.GenerateTransactionFromRecurrencesAsync(recurrences, cancellationToken);
+        return result.ToActionResult();
+    }
 }

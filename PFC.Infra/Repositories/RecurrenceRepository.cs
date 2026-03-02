@@ -30,4 +30,11 @@ public sealed class RecurrenceRepository : IRecurrenceRepository
             .Where(r => r.UserId == userId && r.IsActive)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Recurrence>> GetRecurrencesByIds(List<Guid> recurrencesIds, CancellationToken cancellationToken)
+    {
+        return await _context.Recurrences
+            .Where(r => recurrencesIds.Contains(r.Id))
+            .ToListAsync(cancellationToken);
+    }
 }
