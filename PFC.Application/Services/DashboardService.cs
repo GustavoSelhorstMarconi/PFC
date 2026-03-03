@@ -17,12 +17,13 @@ public sealed class DashboardService : IDashboardService
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<DashboardSummaryResponse>> GetDashboardSummary(DateOnly? date, CancellationToken cancellationToken)
+    public async Task<Result<DashboardSummaryResponse>> GetDashboardSummary(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetUserId();
 
-        var referenceDate = date ?? DateOnly.FromDateTime(DateTime.Now);
-        var dateEnd = referenceDate.AddMonths(1);
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var from = fromDate ?? today.AddMonths(-1);
+        var to = toDate ?? today;
 
         var transactions = await _transactionRepository
             .GetByUserIdAsync(userId, null, null, cancellationToken);
@@ -36,11 +37,11 @@ public sealed class DashboardService : IDashboardService
             .Sum(t => t.Type == TransactionType.Income ? t.Amount : -t.Amount);
 
         var monthIncome = transactions
-            .Where(t => t.Date >= referenceDate && t.Date < dateEnd && t.Type == TransactionType.Income)
+            .Where(t => t.Date >= from && t.Date <= to && t.Type == TransactionType.Income)
             .Sum(t => (decimal?)t.Amount) ?? 0;
 
         var monthExpense = transactions
-            .Where(t => t.Date >= referenceDate && t.Date < dateEnd && t.Type == TransactionType.Expense)
+            .Where(t => t.Date >= from && t.Date <= to && t.Type == TransactionType.Expense)
             .Sum(t => (decimal?)t.Amount) ?? 0;
 
         return new DashboardSummaryResponse
@@ -52,13 +53,13 @@ public sealed class DashboardService : IDashboardService
         };
     }
 
-    public async Task<Result<IEnumerable<MonthlyIncomeExpenseResponse>>> GetMonthlyIncomeExpenseHistory(CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<MonthlyIncomeExpenseResponse>>> GetMonthlyIncomeExpenseHistory(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetUserId();
 
         var today = DateOnly.FromDateTime(DateTime.Now);
-        var from = new DateOnly(today.Year, today.Month, 1).AddMonths(-11);
-        var to = new DateOnly(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+        var from = fromDate.HasValue ? fromDate.Value : today.AddMonths(-1);
+        var to = toDate.HasValue ? toDate.Value : today;
 
         var monthlyData = await _transactionRepository.GetMonthlyIncomeExpenseAsync(userId, startDate: from, endDate: to, cancellationToken);
 
@@ -69,6 +70,40 @@ public sealed class DashboardService : IDashboardService
             Income = m.Income,
             Expense = m.Expense
         });
+
+        return Result.Success(response);
+    }
+
+    public async Task<Result<CategoryTotalsResponse>> GetCategoryTotals(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var from = fromDate ?? today.AddMonths(-1);
+        var to = toDate ?? today;
+
+        var transactions = await _transactionRepository.GetCategoryTotalsByRangeAsync(userId, from, to, [TransactionType.Income, TransactionType.Expense], cancellationToken);
+
+        var incomes = transactions
+            .Where(transaction => transaction.Type == TransactionType.Income);
+        var expenses = transactions
+            .Where(transaction => transaction.Type == TransactionType.Expense);
+
+        var response = new CategoryTotalsResponse
+        {
+            IncomeTotals = incomes.Select(x => new CategoryTotalItemResponse
+            {
+                CategoryName = x.Name,
+                Color = x.Color,
+                Total = x.Total
+            }),
+            ExpenseTotals = expenses.Select(x => new CategoryTotalItemResponse
+            {
+                CategoryName = x.Name,
+                Color = x.Color,
+                Total = x.Total
+            })
+        };
 
         return Result.Success(response);
     }

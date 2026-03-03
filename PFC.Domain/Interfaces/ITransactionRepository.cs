@@ -1,4 +1,5 @@
 using PFC.Domain.Entities;
+using PFC.Domain.Enums;
 using PFC.Domain.Models;
 
 namespace PFC.Domain.Interfaces;
@@ -12,4 +13,5 @@ public interface ITransactionRepository
     Task<IEnumerable<CategoryExpenseTotal>> GetExpenseTotalsByCategoryAsync(Guid userId, int month, int year, CancellationToken cancellationToken);
     Task<IEnumerable<TransactionByRecurrenceIdsResponse>> GetTransactionsByRecurrencesIds(List<Guid> recurrenceIds);
     Task<IEnumerable<MonthlyIncomeExpenseModel>> GetMonthlyIncomeExpenseAsync(Guid userId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken);
+    Task<IEnumerable<CategoryExpenseTotal>> GetCategoryTotalsByRangeAsync(Guid userId, DateOnly fromDate, DateOnly toDate, List<TransactionType> types, CancellationToken cancellationToken);
 }

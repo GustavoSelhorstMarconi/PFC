@@ -114,6 +114,24 @@ public sealed class TransactionRepository : ITransactionRepository
         return result;
     }
 
+    public async Task<IEnumerable<CategoryExpenseTotal>> GetCategoryTotalsByRangeAsync(Guid userId, DateOnly fromDate, DateOnly toDate, List<TransactionType> types, CancellationToken cancellationToken)
+    {
+        var query = from t in _context.Transactions.AsNoTracking()
+                    join c in _context.Categories.AsNoTracking() on t.CategoryId equals c.Id
+                    where t.UserId == userId && t.IsActive && types.Contains(t.Type) && t.Date >= fromDate && t.Date <= toDate
+                    group t by new { c.Id, c.Name, c.Color, t.Type } into g
+                    select new CategoryExpenseTotal
+                    {
+                        CategoryId = g.Key.Id,
+                        Name = g.Key.Name,
+                        Color = g.Key.Color,
+                        Total = g.Sum(x => x.Amount),
+                        Type = g.Key.Type
+                    };
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<MonthlyIncomeExpenseModel>> GetMonthlyIncomeExpenseAsync(Guid userId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken)
     {
         var query = from t in _context.Transactions.AsNoTracking()

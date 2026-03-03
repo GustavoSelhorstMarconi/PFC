@@ -18,16 +18,23 @@ public sealed class DashboardController : ControllerBase
     }
 
     [HttpGet("summary")]
-    public async Task<IActionResult> GetSummary([FromQuery] DateOnly? date, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetSummary([FromQuery] DateOnly? fromDate, [FromQuery] DateOnly? toDate, CancellationToken cancellationToken)
     {
-        var summary = await _dashboardService.GetDashboardSummary(date, cancellationToken);
+        var summary = await _dashboardService.GetDashboardSummary(fromDate, toDate, cancellationToken);
         return summary.ToOkActionResult();
     }
 
     [HttpGet("income-expense-history")]
-    public async Task<IActionResult> GetIncomeExpenseHistory(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetIncomeExpenseHistory([FromQuery] DateOnly? fromDate, [FromQuery] DateOnly? toDate, CancellationToken cancellationToken)
     {
-        var history = await _dashboardService.GetMonthlyIncomeExpenseHistory(cancellationToken);
+        var history = await _dashboardService.GetMonthlyIncomeExpenseHistory(fromDate, toDate, cancellationToken);
         return history.ToOkActionResult();
+    }
+
+    [HttpGet("category-totals")]
+    public async Task<IActionResult> GetCategoryTotals([FromQuery] DateOnly? fromDate, [FromQuery] DateOnly? toDate, CancellationToken cancellationToken)
+    {
+        var totals = await _dashboardService.GetCategoryTotals(fromDate, toDate, cancellationToken);
+        return totals.ToOkActionResult();
     }
 }
