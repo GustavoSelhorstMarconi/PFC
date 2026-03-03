@@ -11,4 +11,5 @@ public interface ITransactionRepository
     Task<(decimal TotalIncome, decimal TotalExpense)> GetTotalsByUserAsync(Guid userId, int? month, int? year, CancellationToken cancellationToken);
     Task<IEnumerable<CategoryExpenseTotal>> GetExpenseTotalsByCategoryAsync(Guid userId, int month, int year, CancellationToken cancellationToken);
     Task<IEnumerable<TransactionByRecurrenceIdsResponse>> GetTransactionsByRecurrencesIds(List<Guid> recurrenceIds);
+    Task<IEnumerable<MonthlyIncomeExpenseModel>> GetMonthlyIncomeExpenseAsync(Guid userId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken);
 }

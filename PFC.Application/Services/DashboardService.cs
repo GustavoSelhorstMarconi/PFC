@@ -51,4 +51,25 @@ public sealed class DashboardService : IDashboardService
             MonthResult = monthIncome - monthExpense
         };
     }
+
+    public async Task<Result<IEnumerable<MonthlyIncomeExpenseResponse>>> GetMonthlyIncomeExpenseHistory(CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var from = new DateOnly(today.Year, today.Month, 1).AddMonths(-11);
+        var to = new DateOnly(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+
+        var monthlyData = await _transactionRepository.GetMonthlyIncomeExpenseAsync(userId, startDate: from, endDate: to, cancellationToken);
+
+        var response = monthlyData.Select(m => new MonthlyIncomeExpenseResponse
+        {
+            Month = m.Month,
+            Year = m.Year,
+            Income = m.Income,
+            Expense = m.Expense
+        });
+
+        return Result.Success(response);
+    }
 }
