@@ -12,8 +12,8 @@ using PFC.Infra.Context;
 namespace PFC.Infra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260222142425_CreateGoalTable")]
-    partial class CreateGoalTable
+    [Migration("20260303182303_CreateDatabase")]
+    partial class CreateDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,6 +86,11 @@ namespace PFC.Infra.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -99,7 +104,7 @@ namespace PFC.Infra.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -108,6 +113,53 @@ namespace PFC.Infra.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("PFC.Domain.Entities.Debt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("InterestRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<decimal>("RemainingAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsActive");
+
+                    b.ToTable("Debts", (string)null);
                 });
 
             modelBuilder.Entity("PFC.Domain.Entities.Goal", b =>
@@ -125,8 +177,8 @@ namespace PFC.Infra.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasDefaultValue(0m);
 
-                    b.Property<DateTime?>("Deadline")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("Deadline")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -151,7 +203,7 @@ namespace PFC.Infra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("goals", (string)null);
+                    b.ToTable("Goals", (string)null);
                 });
 
             modelBuilder.Entity("PFC.Domain.Entities.Recurrence", b =>
@@ -182,13 +234,16 @@ namespace PFC.Infra.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("Frequency")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("GeneratesTransaction")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Interval")
                         .HasColumnType("integer");
@@ -196,8 +251,8 @@ namespace PFC.Infra.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -293,8 +348,11 @@ namespace PFC.Infra.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("DebtId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasMaxLength(300)
@@ -305,6 +363,9 @@ namespace PFC.Infra.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<Guid?>("RecurrenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -332,7 +393,11 @@ namespace PFC.Infra.Migrations
 
                     b.HasIndex("Date");
 
+                    b.HasIndex("DebtId");
+
                     b.HasIndex("GoalId");
+
+                    b.HasIndex("RecurrenceId");
 
                     b.HasIndex("UserId");
 
@@ -394,6 +459,16 @@ namespace PFC.Infra.Migrations
                 {
                     b.HasOne("PFC.Domain.Entities.User", "User")
                         .WithMany("Categories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PFC.Domain.Entities.Debt", b =>
+                {
+                    b.HasOne("PFC.Domain.Entities.User", "User")
+                        .WithMany("Debts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -480,10 +555,19 @@ namespace PFC.Infra.Migrations
                         .WithMany("Transactions")
                         .HasForeignKey("CategoryId1");
 
+                    b.HasOne("PFC.Domain.Entities.Debt", "Debt")
+                        .WithMany("Transactions")
+                        .HasForeignKey("DebtId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("PFC.Domain.Entities.Goal", "Goal")
                         .WithMany("Transactions")
                         .HasForeignKey("GoalId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("PFC.Domain.Entities.Recurrence", "Recurrence")
+                        .WithMany()
+                        .HasForeignKey("RecurrenceId");
 
                     b.HasOne("PFC.Domain.Entities.User", "User")
                         .WithMany()
@@ -499,7 +583,11 @@ namespace PFC.Infra.Migrations
 
                     b.Navigation("Category");
 
+                    b.Navigation("Debt");
+
                     b.Navigation("Goal");
+
+                    b.Navigation("Recurrence");
 
                     b.Navigation("User");
                 });
@@ -518,6 +606,11 @@ namespace PFC.Infra.Migrations
                     b.Navigation("Transactions");
                 });
 
+            modelBuilder.Entity("PFC.Domain.Entities.Debt", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
             modelBuilder.Entity("PFC.Domain.Entities.Goal", b =>
                 {
                     b.Navigation("Transactions");
@@ -528,6 +621,8 @@ namespace PFC.Infra.Migrations
                     b.Navigation("Accounts");
 
                     b.Navigation("Categories");
+
+                    b.Navigation("Debts");
 
                     b.Navigation("Goals");
 
