@@ -4,14 +4,15 @@ namespace PFC.Domain.Entities;
 
 public sealed class Category : BaseEntity
 {
-    public Guid UserId { get; private set; }
-    public User User { get; private set; } = null!;
+    public Guid? UserId { get; private set; }
+    public User? User { get; private set; }
 
     public string Name { get; private set; } = null!;
     public CategoryType Type { get; private set; }
     public string Color { get; private set; } = null!;
     public string? Icon { get; private set; }
     public bool IsActive { get; private set; } = true;
+    public bool IsDefault { get; private set; }
     public List<Transaction> Transactions { get; private set; } = new();
     public List<Recurrence> Recurrences { get; private set; } = new();
 

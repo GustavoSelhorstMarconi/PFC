@@ -26,6 +26,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(x => x.IsActive)
             .IsRequired();
 
+        builder.Property(x => x.IsDefault)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
@@ -42,6 +46,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasOne(x => x.User)
            .WithMany(x => x.Categories)
            .HasForeignKey(x => x.UserId)
-           .OnDelete(DeleteBehavior.Cascade);
+           .OnDelete(DeleteBehavior.Cascade)
+           .IsRequired(false);
     }
 }

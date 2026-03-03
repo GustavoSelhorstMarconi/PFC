@@ -18,7 +18,7 @@ public sealed class CategoryRepository : ICategoryRepository
     {
         return await _context.Categories
             .AsNoTracking()
-            .Where(c => c.UserId == userId)
+            .Where(c => c.UserId == userId || c.IsDefault)
             .ToListAsync(cancellationToken);
     }
 
@@ -26,6 +26,6 @@ public sealed class CategoryRepository : ICategoryRepository
     {
         return await _context.Categories
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.UserId == userId && c.Name == name.Trim(), cancellationToken);
+            .FirstOrDefaultAsync(c => (c.UserId == userId || c.IsDefault) && c.Name == name.Trim(), cancellationToken);
     }
 }
