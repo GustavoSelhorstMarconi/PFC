@@ -1,5 +1,6 @@
 using PFC.Application.Common;
 using PFC.Application.Interfaces;
+using PFC.Domain.Enums;
 using PFC.Domain.Interfaces;
 using PFC.Dto.Dashboard;
 
@@ -16,28 +17,38 @@ public sealed class DashboardService : IDashboardService
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<MonthlySummaryDto>> GetMonthlySummaryAsync(int month, int year, CancellationToken cancellationToken)
+    public async Task<Result<DashboardSummaryResponse>> GetDashboardSummary(DateOnly? date, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetUserId();
 
-        var totals = await _transactionRepository.GetTotalsByUserAsync(userId, month, year, cancellationToken);
+        var referenceDate = date ?? DateOnly.FromDateTime(DateTime.Now);
+        var dateEnd = referenceDate.AddMonths(1);
 
-        var categories = await _transactionRepository.GetExpenseTotalsByCategoryAsync(userId, month, year, cancellationToken);
+        var transactions = await _transactionRepository
+            .GetByUserIdAsync(userId, null, null, cancellationToken);
 
-        var dto = new MonthlySummaryDto
+        if (!transactions.Any())
         {
-            TotalIncome = totals.TotalIncome,
-            TotalExpense = totals.TotalExpense,
-            Balance = totals.TotalIncome - totals.TotalExpense,
-            ExpenseByCategory = categories.Select(c => new CategoryExpenseDto
-            {
-                CategoryId = c.CategoryId,
-                Name = c.Name,
-                Color = c.Color,
-                Total = c.Total
-            }).ToList()
-        };
+            return Result.Success(new DashboardSummaryResponse());
+        }
 
-        return Result.Success(dto);
+        var totalBalance = transactions
+            .Sum(t => t.Type == TransactionType.Income ? t.Amount : -t.Amount);
+
+        var monthIncome = transactions
+            .Where(t => t.Date >= referenceDate && t.Date < dateEnd && t.Type == TransactionType.Income)
+            .Sum(t => (decimal?)t.Amount) ?? 0;
+
+        var monthExpense = transactions
+            .Where(t => t.Date >= referenceDate && t.Date < dateEnd && t.Type == TransactionType.Expense)
+            .Sum(t => (decimal?)t.Amount) ?? 0;
+
+        return new DashboardSummaryResponse
+        {
+            TotalBalance = totalBalance,
+            MonthIncome = monthIncome,
+            MonthExpense = monthExpense,
+            MonthResult = monthIncome - monthExpense
+        };
     }
 }

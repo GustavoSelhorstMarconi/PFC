@@ -5,5 +5,5 @@ namespace PFC.Application.Interfaces;
 
 public interface IDashboardService
 {
-    Task<Result<MonthlySummaryDto>> GetMonthlySummaryAsync(int month, int year, CancellationToken cancellationToken);
+    Task<Result<DashboardSummaryResponse>> GetDashboardSummary(DateOnly? date, CancellationToken cancellationToken);
 }

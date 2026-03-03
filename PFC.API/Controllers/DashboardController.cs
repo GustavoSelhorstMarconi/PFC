@@ -18,15 +18,9 @@ public sealed class DashboardController : ControllerBase
     }
 
     [HttpGet("summary")]
-    public async Task<IActionResult> GetSummary([FromQuery] int month, [FromQuery] int year, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetSummary([FromQuery] DateOnly? date, CancellationToken cancellationToken)
     {
-        if (month < 1 || month > 12)
-            return BadRequest(new { error = "Invalid month" });
-
-        if (year < 2000)
-            return BadRequest(new { error = "Invalid year" });
-
-        var summary = await _dashboardService.GetMonthlySummaryAsync(month, year, cancellationToken);
+        var summary = await _dashboardService.GetDashboardSummary(date, cancellationToken);
         return summary.ToOkActionResult();
     }
 }
