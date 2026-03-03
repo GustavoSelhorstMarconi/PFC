@@ -23,4 +23,11 @@ public sealed class DashboardController : ControllerBase
         var summary = await _dashboardService.GetDashboardSummary(date, cancellationToken);
         return summary.ToOkActionResult();
     }
+
+    [HttpGet("income-expense-history")]
+    public async Task<IActionResult> GetIncomeExpenseHistory(CancellationToken cancellationToken)
+    {
+        var history = await _dashboardService.GetMonthlyIncomeExpenseHistory(cancellationToken);
+        return history.ToOkActionResult();
+    }
 }

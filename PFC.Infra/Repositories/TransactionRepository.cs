@@ -113,4 +113,21 @@ public sealed class TransactionRepository : ITransactionRepository
 
         return result;
     }
+
+    public async Task<IEnumerable<MonthlyIncomeExpenseModel>> GetMonthlyIncomeExpenseAsync(Guid userId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken)
+    {
+        var query = from t in _context.Transactions.AsNoTracking()
+                    where t.UserId == userId && t.IsActive && t.Date >= startDate && t.Date <= endDate
+                    group t by new { t.Date.Year, t.Date.Month } into g
+                    orderby g.Key.Year, g.Key.Month
+                    select new MonthlyIncomeExpenseModel
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Income = g.Sum(x => x.Type == TransactionType.Income ? x.Amount : 0m),
+                        Expense = g.Sum(x => x.Type == TransactionType.Expense ? x.Amount : 0m)
+                    };
+
+        return await query.ToListAsync(cancellationToken);
+    }
 }
