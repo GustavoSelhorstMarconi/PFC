@@ -8,4 +8,5 @@ public interface IDashboardService
     Task<Result<DashboardSummaryResponse>> GetDashboardSummary(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken);
     Task<Result<IEnumerable<MonthlyIncomeExpenseResponse>>> GetMonthlyIncomeExpenseHistory(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken);
     Task<Result<CategoryTotalsResponse>> GetCategoryTotals(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken);
+    Task<Result<IEnumerable<TransactionsByMonthResponse>>> GetTransactionsByMonth(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken);
 }

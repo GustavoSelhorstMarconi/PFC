@@ -3,6 +3,7 @@ using PFC.Application.Interfaces;
 using PFC.Domain.Enums;
 using PFC.Domain.Interfaces;
 using PFC.Dto.Dashboard;
+using PFC.Dto.Transactions;
 
 namespace PFC.Application.Services;
 
@@ -104,6 +105,38 @@ public sealed class DashboardService : IDashboardService
                 Total = x.Total
             })
         };
+
+        return Result.Success(response);
+    }
+
+    public async Task<Result<IEnumerable<TransactionsByMonthResponse>>> GetTransactionsByMonth(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var from = fromDate.HasValue ? fromDate.Value : today.AddMonths(-4);
+        var to = toDate.HasValue ? toDate.Value : today;
+
+        var transactions = await _transactionRepository.GetTransactionsByRangeDate(userId, from, to, cancellationToken);
+
+        var response = transactions
+            .GroupBy(t => new { t.Date.Year, t.Date.Month })
+            .Select(g => new TransactionsByMonthResponse
+            {
+                Year = g.Key.Year,
+                Month = g.Key.Month,
+                Transactions = g.Select(t => new TransactionResponse
+                {
+                    Id = t.Id,
+                    AccountName = t.Account.Name,
+                    CategoryName = t.Category.Name,
+                    Type = t.Type,
+                    Amount = t.Amount,
+                    Date = t.Date,
+                    Description = t.Description,
+                    IsActive = t.IsActive,
+                }).ToList()
+            });
 
         return Result.Success(response);
     }

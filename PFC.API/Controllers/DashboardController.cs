@@ -37,4 +37,11 @@ public sealed class DashboardController : ControllerBase
         var totals = await _dashboardService.GetCategoryTotals(fromDate, toDate, cancellationToken);
         return totals.ToOkActionResult();
     }
+
+    [HttpGet("transactions-by-month")]
+    public async Task<IActionResult> GetTransactionsByMonth([FromQuery] DateOnly? fromDate, [FromQuery] DateOnly? toDate, CancellationToken cancellationToken)
+    {
+        var totals = await _dashboardService.GetTransactionsByMonth(fromDate, toDate, cancellationToken);
+        return totals.ToOkActionResult();
+    }
 }

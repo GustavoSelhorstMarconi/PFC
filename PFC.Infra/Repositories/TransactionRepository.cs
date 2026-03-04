@@ -148,4 +148,17 @@ public sealed class TransactionRepository : ITransactionRepository
 
         return await query.ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Transaction>> GetTransactionsByRangeDate(Guid userId, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken)
+    {
+        var query = _context.Transactions
+            .Include(t => t.Account)
+            .Include(t => t.Category)
+            .AsNoTracking()
+            .Where(t => t.UserId == userId && t.IsActive &&
+            t.Date >= fromDate &&
+            t.Date <= toDate);
+
+        return await query.OrderByDescending(t => t.Date).ToListAsync(cancellationToken);
+    }
 }
