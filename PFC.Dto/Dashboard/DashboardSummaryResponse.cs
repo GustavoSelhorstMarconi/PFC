@@ -3,7 +3,9 @@
 public class DashboardSummaryResponse
 {
     public decimal TotalBalance { get; set; }
+    public decimal TotalInvestiment { get; set; }
     public decimal MonthIncome { get; set; }
     public decimal MonthExpense { get; set; }
     public decimal MonthResult { get; set; }
+    public decimal MonthInvestiment { get; set; }
 }

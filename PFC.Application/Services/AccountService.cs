@@ -12,12 +12,18 @@ public sealed class AccountService : IAccountService
     private readonly ICurrentUserService _currentUserService;
     private readonly IBaseRepository<Account> _baseRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly ITransactionRepository _transactionRepository;
 
-    public AccountService(ICurrentUserService currentUserService, IBaseRepository<Account> baseRepository, IAccountRepository accountRepository)
+    public AccountService(
+        ICurrentUserService currentUserService,
+        IBaseRepository<Account> baseRepository,
+        IAccountRepository accountRepository,
+        ITransactionRepository transactionRepository)
     {
         _currentUserService = currentUserService;
         _baseRepository = baseRepository;
         _accountRepository = accountRepository;
+        _transactionRepository = transactionRepository;
     }
 
     public async Task<Result<AccountResponse>> CreateAccountAsync(CreateAccountRequest request, CancellationToken cancellationToken)
@@ -44,6 +50,7 @@ public sealed class AccountService : IAccountService
             Name = account.Name,
             Type = account.Type,
             InitialBalance = account.InitialBalance,
+            CurrentBalance = account.InitialBalance,
             IsActive = account.IsActive,
             CreatedAt = account.CreatedAt,
             UpdatedAt = account.UpdatedAt
@@ -75,12 +82,15 @@ public sealed class AccountService : IAccountService
 
         await _baseRepository.SaveChangesAsync(cancellationToken);
 
+        var (income, expense) = await _transactionRepository.GetSumsByAccountAsync(account.Id, cancellationToken);
+
         var response = new AccountResponse
         {
             Id = account.Id,
             Name = account.Name,
             Type = account.Type,
             InitialBalance = account.InitialBalance,
+            CurrentBalance = account.InitialBalance + income - expense,
             IsActive = account.IsActive,
             CreatedAt = account.CreatedAt,
             UpdatedAt = account.UpdatedAt
@@ -94,16 +104,25 @@ public sealed class AccountService : IAccountService
         var userId = _currentUserService.GetUserId();
 
         var accounts = await _accountRepository.GetByUserIdAsync(userId, cancellationToken);
+        var balances = await _transactionRepository.GetAccountBalancesByUserAsync(userId, cancellationToken);
+        var balanceMap = balances.ToDictionary(b => b.AccountId);
 
-        var result = accounts.Select(a => new AccountResponse
+        var result = accounts.Select(a =>
         {
-            Id = a.Id,
-            Name = a.Name,
-            Type = a.Type,
-            InitialBalance = a.InitialBalance,
-            IsActive = a.IsActive,
-            CreatedAt = a.CreatedAt,
-            UpdatedAt = a.UpdatedAt
+            balanceMap.TryGetValue(a.Id, out var b);
+            var currentBalance = a.InitialBalance + (b?.Income ?? 0m) - (b?.Expense ?? 0m);
+
+            return new AccountResponse
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Type = a.Type,
+                InitialBalance = a.InitialBalance,
+                CurrentBalance = currentBalance,
+                IsActive = a.IsActive,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt
+            };
         }).ToList();
 
         return Result.Success<IEnumerable<AccountResponse>>(result);

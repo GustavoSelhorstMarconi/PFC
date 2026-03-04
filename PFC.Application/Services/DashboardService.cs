@@ -34,22 +34,37 @@ public sealed class DashboardService : IDashboardService
             return Result.Success(new DashboardSummaryResponse());
         }
 
-        var totalBalance = transactions
+        var transactionsInvestment = transactions
+            .Where(t => t.Account.Type == AccountType.Investment);
+
+        var transactionsOutvestment = transactions
+            .Where(t => t.Account.Type != AccountType.Investment);
+
+        var totalBalance = transactionsOutvestment
             .Sum(t => t.Type == TransactionType.Income ? t.Amount : -t.Amount);
 
-        var monthIncome = transactions
+        var totalInvestiments = transactionsInvestment
+            .Sum(t => t.Amount);
+
+        var monthIncome = transactionsOutvestment
             .Where(t => t.Date >= from && t.Date <= to && t.Type == TransactionType.Income)
             .Sum(t => (decimal?)t.Amount) ?? 0;
 
-        var monthExpense = transactions
+        var monthExpense = transactionsOutvestment
             .Where(t => t.Date >= from && t.Date <= to && t.Type == TransactionType.Expense)
+            .Sum(t => (decimal?)t.Amount) ?? 0;
+
+        var monthInvestiments = transactionsInvestment
+            .Where(t => t.Date >= from && t.Date <= to)
             .Sum(t => (decimal?)t.Amount) ?? 0;
 
         return new DashboardSummaryResponse
         {
             TotalBalance = totalBalance,
+            TotalInvestiment = totalInvestiments,
             MonthIncome = monthIncome,
             MonthExpense = monthExpense,
+            MonthInvestiment = monthInvestiments,
             MonthResult = monthIncome - monthExpense
         };
     }
