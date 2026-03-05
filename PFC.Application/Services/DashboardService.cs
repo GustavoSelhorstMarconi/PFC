@@ -10,11 +10,13 @@ namespace PFC.Application.Services;
 public sealed class DashboardService : IDashboardService
 {
     private readonly ITransactionRepository _transactionRepository;
+    private readonly IAccountRepository _accountRepository;
     private readonly ICurrentUserService _currentUserService;
 
-    public DashboardService(ITransactionRepository transactionRepository, ICurrentUserService currentUserService)
+    public DashboardService(ITransactionRepository transactionRepository, IAccountRepository accountRepository, ICurrentUserService currentUserService)
     {
         _transactionRepository = transactionRepository;
+        _accountRepository = accountRepository;
         _currentUserService = currentUserService;
     }
 
@@ -22,9 +24,7 @@ public sealed class DashboardService : IDashboardService
     {
         var userId = _currentUserService.GetUserId();
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var from = fromDate ?? today.AddMonths(-1);
-        var to = toDate ?? today;
+        var (from, to) = GetDateRange(fromDate, toDate, -1);
 
         var transactions = await _transactionRepository
             .GetByUserIdAsync(userId, null, null, cancellationToken);
@@ -73,9 +73,7 @@ public sealed class DashboardService : IDashboardService
     {
         var userId = _currentUserService.GetUserId();
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var from = fromDate.HasValue ? fromDate.Value : today.AddMonths(-1);
-        var to = toDate.HasValue ? toDate.Value : today;
+        var (from, to) = GetDateRange(fromDate, toDate, -1);
 
         var monthlyData = await _transactionRepository.GetMonthlyIncomeExpenseAsync(userId, startDate: from, endDate: to, cancellationToken);
 
@@ -94,9 +92,7 @@ public sealed class DashboardService : IDashboardService
     {
         var userId = _currentUserService.GetUserId();
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var from = fromDate ?? today.AddMonths(-1);
-        var to = toDate ?? today;
+        var (from, to) = GetDateRange(fromDate, toDate, -1);
 
         var transactions = await _transactionRepository.GetCategoryTotalsByRangeAsync(userId, from, to, [TransactionType.Income, TransactionType.Expense], cancellationToken);
 
@@ -128,9 +124,7 @@ public sealed class DashboardService : IDashboardService
     {
         var userId = _currentUserService.GetUserId();
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var from = fromDate.HasValue ? fromDate.Value : today.AddMonths(-4);
-        var to = toDate.HasValue ? toDate.Value : today;
+        var (from, to) = GetDateRange(fromDate, toDate, -4);
 
         var transactions = await _transactionRepository.GetTransactionsByRangeDate(userId, from, to, cancellationToken);
 
@@ -154,5 +148,52 @@ public sealed class DashboardService : IDashboardService
             });
 
         return Result.Success(response);
+    }
+
+    public async Task<Result<IEnumerable<InvestmentEvolutionResponse>>> GetInvestmentEvolution(DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var (from, to) = GetDateRange(fromDate, toDate, -12);
+
+        var investmentAccounts = await _accountRepository.GetInvestmentAccountsAsync(userId, cancellationToken);
+
+        var investmentTransactions = await _transactionRepository.GetInvestmentTransactionsAsync(userId, to, cancellationToken);
+
+        var result = new List<InvestmentEvolutionResponse>();
+        var current = new DateOnly(from.Year, from.Month, 1);
+        var end = new DateOnly(to.Year, to.Month, 1);
+
+        while (current <= end)
+        {
+            var endOfMonth = new DateOnly(current.Year, current.Month, DateTime.DaysInMonth(current.Year, current.Month));
+
+            var initialBalances = investmentAccounts
+                .Where(a => DateOnly.FromDateTime(a.CreatedAt) <= endOfMonth)
+                .Sum(a => a.InitialBalance);
+
+            var transactionSum = investmentTransactions
+                .Where(t => t.Date <= endOfMonth)
+                .Sum(t => t.Type == TransactionType.Income ? t.Amount : -t.Amount);
+
+            result.Add(new InvestmentEvolutionResponse
+            {
+                Month = current.Month,
+                Year = current.Year,
+                InvestmentValue = initialBalances + transactionSum
+            });
+
+            current = current.AddMonths(1);
+        }
+
+        return Result.Success<IEnumerable<InvestmentEvolutionResponse>>(result);
+    }
+
+    private (DateOnly from, DateOnly to) GetDateRange(DateOnly? fromDate, DateOnly? toDate, int monthDiff)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var from = fromDate.HasValue ? fromDate.Value : today.AddMonths(monthDiff);
+        var to = toDate.HasValue ? toDate.Value : today;
+        return (from, to);
     }
 }

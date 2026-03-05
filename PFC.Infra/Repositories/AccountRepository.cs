@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PFC.Domain.Entities;
+using PFC.Domain.Enums;
 using PFC.Domain.Interfaces;
 using PFC.Infra.Context;
 
@@ -19,6 +20,14 @@ public sealed class AccountRepository : IAccountRepository
         return await _context.Accounts
             .AsNoTracking()
             .Where(a => a.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Account>> GetInvestmentAccountsAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Accounts
+            .AsNoTracking()
+            .Where(a => a.UserId == userId && a.Type == AccountType.Investment)
             .ToListAsync(cancellationToken);
     }
 

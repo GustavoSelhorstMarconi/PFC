@@ -33,6 +33,23 @@ public sealed class TransactionRepository : ITransactionRepository
         return await query.ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<AccountBalanceModel>> GetAccountBalancesByIdsAsync(List<Guid> ids, CancellationToken cancellationToken)
+    {
+        var query = from a in _context.Accounts.AsNoTracking()
+                    where ids.Contains(a.Id) && a.IsActive
+                    join t in _context.Transactions.AsNoTracking().Where(t => t.IsActive) on a.Id equals t.AccountId into tx
+                    select new AccountBalanceModel
+                    {
+                        AccountId = a.Id,
+                        Name = a.Name,
+                        InitialBalance = a.InitialBalance,
+                        Income = tx.Where(x => x.Type == TransactionType.Income).Sum(x => (decimal?)x.Amount) ?? 0m,
+                        Expense = tx.Where(x => x.Type == TransactionType.Expense).Sum(x => (decimal?)x.Amount) ?? 0m
+                    };
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Transaction>> GetByUserIdAsync(Guid userId, int? month, int? year, CancellationToken cancellationToken)
     {
         var query = _context.Transactions
@@ -160,5 +177,18 @@ public sealed class TransactionRepository : ITransactionRepository
             t.Date <= toDate);
 
         return await query.OrderByDescending(t => t.Date).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Transaction>> GetInvestmentTransactionsAsync(Guid userId, DateOnly toDate, CancellationToken cancellationToken)
+    {
+        var query = from t in _context.Transactions.AsNoTracking()
+                    join a in _context.Accounts.AsNoTracking() on t.AccountId equals a.Id
+                    where t.UserId == userId
+                          && t.IsActive
+                          && a.Type == AccountType.Investment
+                          && t.Date <= toDate
+                    select t;
+
+        return await query.ToListAsync(cancellationToken);
     }
 }
