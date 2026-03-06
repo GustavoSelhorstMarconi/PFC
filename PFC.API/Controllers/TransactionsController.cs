@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PFC.API.Extensions;
 using PFC.Application.Interfaces;
+using PFC.Dto.Import;
 using PFC.Dto.Transactions;
 
 namespace PFC.API.Controllers;
@@ -12,10 +13,12 @@ namespace PFC.API.Controllers;
 public sealed class TransactionsController : ControllerBase
 {
     private readonly ITransactionService _transactionService;
+    private readonly IImportService _importService;
 
-    public TransactionsController(ITransactionService transactionService)
+    public TransactionsController(ITransactionService transactionService, IImportService importService)
     {
         _transactionService = transactionService;
+        _importService = importService;
     }
 
     [HttpPost]
@@ -50,6 +53,22 @@ public sealed class TransactionsController : ControllerBase
     public async Task<IActionResult> GenerateTransactionFromRecurrences([FromBody] List<GenerateTransactionFromRecurrenceRequest> recurrences, CancellationToken cancellationToken)
     {
         var result = await _transactionService.GenerateTransactionFromRecurrencesAsync(recurrences, cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("import/preview")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> PreviewImport(IFormFile file, CancellationToken cancellationToken)
+    {
+        using var stream = file.OpenReadStream();
+        var result = await _importService.PreviewAsync(stream, file.FileName, cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("import/confirm")]
+    public async Task<IActionResult> ConfirmImport([FromBody] ConfirmImportRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _importService.ConfirmAsync(request, cancellationToken);
         return result.ToActionResult();
     }
 }

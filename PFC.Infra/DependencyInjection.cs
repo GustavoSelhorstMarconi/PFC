@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IImportService, ImportService>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IBalanceService, BalanceService>();
         services.AddScoped<IDashboardService, DashboardService>();
