@@ -53,6 +53,7 @@ public sealed class TransactionRepository : ITransactionRepository
     public async Task<IEnumerable<Transaction>> GetByUserIdAsync(Guid userId, int? month, int? year, CancellationToken cancellationToken)
     {
         var query = _context.Transactions
+            .Include(t => t.Account)
             .AsNoTracking()
             .Where(t => t.UserId == userId && t.IsActive);
 
