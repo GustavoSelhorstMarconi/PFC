@@ -26,6 +26,8 @@ public sealed class DashboardService : IDashboardService
 
         var (from, to) = GetDateRange(fromDate, toDate, -1);
 
+        var accounts = await _accountRepository.GetByUserIdAsync(userId, cancellationToken);
+
         var transactions = await _transactionRepository
             .GetByUserIdAsync(userId, null, null, cancellationToken);
 
@@ -40,10 +42,18 @@ public sealed class DashboardService : IDashboardService
         var transactionsOutvestment = transactions
             .Where(t => t.Account.Type != AccountType.Investment);
 
+        var totalAccountsInvestment = accounts
+            .Where(a => a.Type == AccountType.Investment)
+            .Sum(a => a.InitialBalance);
+
+        var totalAccountsOutvestment = accounts
+            .Where(a => a.Type != AccountType.Investment)
+            .Sum(a => a.InitialBalance);
+
         var totalBalance = transactionsOutvestment
             .Sum(t => t.Type == TransactionType.Income ? t.Amount : -t.Amount);
 
-        var totalInvestiments = transactionsInvestment
+        var totalInvestments = transactionsInvestment
             .Sum(t => t.Amount);
 
         var monthIncome = transactionsOutvestment
@@ -54,17 +64,17 @@ public sealed class DashboardService : IDashboardService
             .Where(t => t.Date >= from && t.Date <= to && t.Type == TransactionType.Expense)
             .Sum(t => (decimal?)t.Amount) ?? 0;
 
-        var monthInvestiments = transactionsInvestment
+        var monthInvestments = transactionsInvestment
             .Where(t => t.Date >= from && t.Date <= to)
             .Sum(t => (decimal?)t.Amount) ?? 0;
 
         return new DashboardSummaryResponse
         {
-            TotalBalance = totalBalance,
-            TotalInvestiment = totalInvestiments,
+            TotalBalance = totalAccountsOutvestment + totalBalance,
+            TotalInvestment = totalAccountsInvestment + totalInvestments,
             MonthIncome = monthIncome,
             MonthExpense = monthExpense,
-            MonthInvestiment = monthInvestiments,
+            MonthInvestment = monthInvestments,
             MonthResult = monthIncome - monthExpense
         };
     }
