@@ -75,7 +75,7 @@ public sealed class CategoryService : ICategoryService
         if (category is null)
             throw new NotFoundException("Category not found");
 
-        if (category.UserId != userId)
+        if (category.UserId is not null && category.UserId != userId)
             throw new UnauthorizedException();
 
         var existing = await _categoryRepository.GetByUserIdAndNameAsync(userId, request.Name, cancellationToken);

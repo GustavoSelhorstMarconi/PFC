@@ -63,7 +63,7 @@ public sealed class RecurrenceService : IRecurrenceService
         if (category is null)
             throw new NotFoundException("Category not found");
 
-        if (category.UserId != userId)
+        if (category.UserId is not null && category.UserId != userId)
             throw new UnauthorizedException();
 
         if (request.Type == TransactionType.Income && category.Type != CategoryType.Income)
@@ -120,7 +120,7 @@ public sealed class RecurrenceService : IRecurrenceService
         if (category is null)
             throw new NotFoundException("Category not found");
 
-        if (category.UserId != userId)
+        if (category.UserId is not null && category.UserId != userId)
             throw new UnauthorizedException();
 
         if (request.Type == TransactionType.Income && category.Type != CategoryType.Income)
