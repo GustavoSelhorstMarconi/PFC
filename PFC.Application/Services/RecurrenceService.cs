@@ -4,6 +4,8 @@ using PFC.Domain.Entities;
 using PFC.Domain.Enums;
 using PFC.Domain.Exceptions;
 using PFC.Domain.Interfaces;
+using PFC.Domain.Models;
+using PFC.Dto.Common;
 using PFC.Dto.Recurrences;
 
 namespace PFC.Application.Services;
@@ -149,6 +151,23 @@ public sealed class RecurrenceService : IRecurrenceService
         var result = recurrences.Select(r => MapToResponse(r)).ToList();
 
         return Result.Success<IEnumerable<RecurrenceResponse>>(result);
+    }
+
+    public async Task<Result<PagedResponse<RecurrenceResponse>>> GetUserRecurrencesPagedAsync(PagedRequest request, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var (items, totalCount) = await _recurrenceRepository.GetByUserIdPagedAsync(userId, request, cancellationToken);
+
+        var response = new PagedResponse<RecurrenceResponse>
+        {
+            Items = items.Select(r => MapToResponse(r)).ToList(),
+            TotalCount = totalCount,
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
+
+        return Result.Success(response);
     }
 
     public async Task<Result<IEnumerable<RecurrenceProjectionDto>>> GetProjectedOccurrencesAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)

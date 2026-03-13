@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PFC.API.Extensions;
 using PFC.Application.Interfaces;
+using PFC.Domain.Models;
 using PFC.Dto.Import;
 using PFC.Dto.Transactions;
 
@@ -32,6 +33,13 @@ public sealed class TransactionsController : ControllerBase
     public async Task<IActionResult> Get([FromQuery] int? month, [FromQuery] int? year, CancellationToken cancellationToken)
     {
         var result = await _transactionService.GetUserTransactionsAsync(month, year, cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged([FromQuery] int? month, [FromQuery] int? year, [FromQuery] PagedRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _transactionService.GetUserTransactionsPagedAsync(month, year, request, cancellationToken);
         return result.ToActionResult();
     }
 

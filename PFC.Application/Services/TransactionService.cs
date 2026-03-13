@@ -4,6 +4,8 @@ using PFC.Domain.Entities;
 using PFC.Domain.Enums;
 using PFC.Domain.Exceptions;
 using PFC.Domain.Interfaces;
+using PFC.Domain.Models;
+using PFC.Dto.Common;
 using PFC.Dto.Transactions;
 
 namespace PFC.Application.Services;
@@ -421,6 +423,39 @@ public sealed class TransactionService : ITransactionService
         var result = transactions.Select(t => MapToResponse(t)).ToList();
 
         return Result.Success<IEnumerable<TransactionResponse>>(result);
+    }
+
+    public async Task<Result<PagedResponse<TransactionResponse>>> GetUserTransactionsPagedAsync(int? month, int? year, PagedRequest request, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var (items, totalCount) = await _transactionRepository.GetByUserIdPagedAsync(userId, month, year, request, cancellationToken);
+
+        var response = new PagedResponse<TransactionResponse>
+        {
+            Items = items.Select(t => new TransactionResponse
+            {
+                Id = t.Id,
+                AccountId = t.AccountId,
+                AccountName = t.Account?.Name,
+                CategoryId = t.CategoryId,
+                CategoryName = t.Category?.Name,
+                Type = t.Type,
+                Amount = t.Amount,
+                Date = t.Date,
+                Description = t.Description,
+                IsActive = t.IsActive,
+                GoalId = t.GoalId,
+                DebtId = t.DebtId,
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt
+            }).ToList(),
+            TotalCount = totalCount,
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
+
+        return Result.Success(response);
     }
 
     public async Task<Result<IEnumerable<TransactionResponse>>> GenerateTransactionFromRecurrencesAsync(List<GenerateTransactionFromRecurrenceRequest> recurrencesRequest, CancellationToken cancellationToken)

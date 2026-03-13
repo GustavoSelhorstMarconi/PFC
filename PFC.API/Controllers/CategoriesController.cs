@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PFC.API.Extensions;
 using PFC.Application.Interfaces;
+using PFC.Domain.Models;
 using PFC.Dto.Categories;
 
 namespace PFC.API.Controllers;
@@ -29,6 +30,13 @@ public sealed class CategoriesController : ControllerBase
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var result = await _categoryService.GetUserCategoriesAsync(cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged([FromQuery] PagedRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _categoryService.GetUserCategoriesPagedAsync(request, cancellationToken);
         return result.ToActionResult();
     }
 

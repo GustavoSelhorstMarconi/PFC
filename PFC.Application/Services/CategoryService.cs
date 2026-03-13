@@ -3,7 +3,9 @@ using PFC.Application.Interfaces;
 using PFC.Domain.Entities;
 using PFC.Domain.Exceptions;
 using PFC.Domain.Interfaces;
+using PFC.Domain.Models;
 using PFC.Dto.Categories;
+using PFC.Dto.Common;
 
 namespace PFC.Application.Services;
 
@@ -121,5 +123,32 @@ public sealed class CategoryService : ICategoryService
         }).ToList();
 
         return Result.Success<IEnumerable<CategoryResponse>>(result);
+    }
+
+    public async Task<Result<PagedResponse<CategoryResponse>>> GetUserCategoriesPagedAsync(PagedRequest request, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.GetUserId();
+
+        var (items, totalCount) = await _categoryRepository.GetByUserIdPagedAsync(userId, request, cancellationToken);
+
+        var response = new PagedResponse<CategoryResponse>
+        {
+            Items = items.Select(c => new CategoryResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Type = c.Type,
+                Color = c.Color,
+                Icon = c.Icon,
+                IsActive = c.IsActive,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt
+            }).ToList(),
+            TotalCount = totalCount,
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
+
+        return Result.Success(response);
     }
 }

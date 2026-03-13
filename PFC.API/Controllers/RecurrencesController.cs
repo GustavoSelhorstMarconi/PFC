@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PFC.API.Extensions;
 using PFC.Application.Interfaces;
+using PFC.Domain.Models;
 using PFC.Dto.Recurrences;
 
 namespace PFC.API.Controllers;
@@ -29,6 +30,13 @@ public sealed class RecurrencesController : ControllerBase
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var result = await _recurrenceService.GetUserRecurrencesAsync(cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged([FromQuery] PagedRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _recurrenceService.GetUserRecurrencesPagedAsync(request, cancellationToken);
         return result.ToActionResult();
     }
 

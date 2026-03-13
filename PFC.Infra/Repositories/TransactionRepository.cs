@@ -3,6 +3,7 @@ using PFC.Domain.Entities;
 using PFC.Domain.Enums;
 using PFC.Domain.Interfaces;
 using PFC.Domain.Models;
+using PFC.Dto.Common;
 using PFC.Infra.Context;
 
 namespace PFC.Infra.Repositories;
@@ -191,5 +192,55 @@ public sealed class TransactionRepository : ITransactionRepository
                     select t;
 
         return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<(IEnumerable<Transaction> Items, int TotalCount)> GetByUserIdPagedAsync(
+        Guid userId, int? month, int? year, PagedRequest request, CancellationToken cancellationToken)
+    {
+        var query = _context.Transactions
+            .Include(t => t.Account)
+            .Include(t => t.Category)
+            .AsNoTracking()
+            .Where(t => t.UserId == userId && t.IsActive);
+
+        if (month.HasValue)
+            query = query.Where(t => t.Date.Month == month.Value);
+
+        if (year.HasValue)
+            query = query.Where(t => t.Date.Year == year.Value);
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.ToLower();
+            query = query.Where(t =>
+                (t.Description != null && t.Description.ToLower().Contains(search)) ||
+                t.Account.Name.ToLower().Contains(search) ||
+                t.Category.Name.ToLower().Contains(search));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        query = (request.SortBy?.ToLower(), request.SortDir?.ToLower()) switch
+        {
+            ("amount", "desc") => query.OrderByDescending(t => t.Amount),
+            ("amount", _) => query.OrderBy(t => t.Amount),
+            ("description", "desc") => query.OrderByDescending(t => t.Description),
+            ("description", _) => query.OrderBy(t => t.Description),
+            ("type", "desc") => query.OrderByDescending(t => t.Type),
+            ("type", _) => query.OrderBy(t => t.Type),
+            ("accountname", "desc") => query.OrderByDescending(t => t.Account.Name),
+            ("accountname", _) => query.OrderBy(t => t.Account.Name),
+            ("categoryname", "desc") => query.OrderByDescending(t => t.Category.Name),
+            ("categoryname", _) => query.OrderBy(t => t.Category.Name),
+            ("date", "asc") => query.OrderBy(t => t.Date),
+            _ => query.OrderByDescending(t => t.Date),
+        };
+
+        var items = await query
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 }
